@@ -26,6 +26,9 @@ func isSubfolder(src string, dest string) (bool, error) {
 	}
 }
 
+/*
+copy src to dest
+*/
 func CopyDir(src string, dest string) error {
 
 	isSubFolder, err := isSubfolder(dest, src)
@@ -56,6 +59,7 @@ func CopyDir(src string, dest string) error {
 		}
 	}
 
+	// check dest exists
 	if _, err := os.Stat(dest); err != nil {
 		return err
 	}
@@ -66,28 +70,20 @@ func CopyDir(src string, dest string) error {
 	}
 
 	for _, f := range files {
-
 		if f.IsDir() {
-
 			err = CopyDir(src+"/"+f.Name(), dest+"/"+f.Name())
 			if err != nil {
 				return err
 			}
-
-		}
-
-		if !f.IsDir() {
-
+		} else {
 			content, err := os.ReadFile(src + "/" + f.Name())
 			if err != nil {
 				return err
-
 			}
 
 			err = os.WriteFile(dest+"/"+f.Name(), content, 0755)
 			if err != nil {
 				return err
-
 			}
 
 		}

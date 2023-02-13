@@ -3,11 +3,35 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
+
+/*
+*
+return true iif dest if subdirectory of src
+*/
+func isSubfolder(src string, dest string) (bool, error) {
+	if src == dest {
+		return true, nil
+	}
+	path, err := filepath.Rel(src, dest)
+	if err != nil {
+		return false, fmt.Errorf("Invalid Path : %v", err)
+	}
+	if strings.Contains(path, "../") || path == ".." {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
 
 func CopyDir(src string, dest string) error {
 
-	if dest[:len(src)] == src {
+	isSubFolder, err := isSubfolder(dest, src)
+	if err != nil {
+		return err
+	} else if isSubFolder {
 		return fmt.Errorf("Cannot copy a folder into the folder itself!")
 	}
 
@@ -30,6 +54,10 @@ func CopyDir(src string, dest string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if _, err := os.Stat(dest); err != nil {
+		return err
 	}
 
 	files, err := os.ReadDir(src)

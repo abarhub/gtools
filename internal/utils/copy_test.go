@@ -15,9 +15,14 @@ func TestCopyDir(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{"test1", args{"test1", "test20"}, false},
-		{"test1", args{"test1", "test2"}, false},
+		{"test2", args{"test1", "test2"}, false},
+		{"test3", args{"test1", "test1"}, true},
+		{"test4", args{"test1", "test1_bis"}, false},
+		{"test5", args{"test1", "test1/toto"}, true},
+		{"test6", args{"test1", "test1/toto/tata"}, true},
+		{"test7", args{"test1", "test1/toto/tata/titi"}, true},
+		{"test8", args{"test1", "test2/toto/../tata"}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,6 +54,17 @@ func TestCopyDir(t *testing.T) {
 						t.Logf("dest=%v", dest)
 						if err := CopyDir(src, dest); (err != nil) != tt.wantErr {
 							t.Errorf("CopyDir() error = %v, wantErr %v", err, tt.wantErr)
+						} else {
+							if !tt.wantErr {
+								content, err5 := os.ReadFile(dest + "/toto.txt")
+								if err5 != nil {
+									t.Errorf("CopyDir() error = %v", err5)
+								} else {
+									if len(content) != 3 {
+										t.Errorf("file is not valide")
+									}
+								}
+							}
 						}
 					}
 				}

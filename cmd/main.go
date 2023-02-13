@@ -6,8 +6,7 @@ import (
 )
 
 func main() {
-	println("hello")
-	err := utils.CopyDir("./testdir/test1", "./testdir/test_out")
+	err := utils.Run()
 	if err != nil {
 		log.Fatal(err)
 	}

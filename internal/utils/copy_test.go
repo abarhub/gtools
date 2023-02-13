@@ -60,7 +60,7 @@ func TestCopyDir(t *testing.T) {
 								if err5 != nil {
 									t.Errorf("CopyDir() error = %v", err5)
 								} else {
-									if len(content) != 3 {
+									if len(content) != 3 || content[0] != 1 || content[1] != 2 || content[2] != 3 {
 										t.Errorf("file is not valide")
 									}
 								}

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"gtools/internal/utils"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 type CopyParameters struct {
@@ -13,25 +11,6 @@ type CopyParameters struct {
 	PathDest    string
 	ExcludePath []string
 	IncludePath []string
-}
-
-/*
-*
-return true iif dest if subdirectory of src
-*/
-func isSubfolder(src string, dest string) (bool, error) {
-	if src == dest {
-		return true, nil
-	}
-	path, err := filepath.Rel(src, dest)
-	if err != nil {
-		return false, fmt.Errorf("Invalid Path : %v", err)
-	}
-	if strings.Contains(path, "../") || path == ".." {
-		return true, nil
-	} else {
-		return false, nil
-	}
 }
 
 /*
@@ -43,7 +22,7 @@ func CopyDir(param CopyParameters) error {
 
 func copyDirectory(src string, dest string, param CopyParameters) error {
 
-	isSubFolder, err := isSubfolder(dest, src)
+	isSubFolder, err := utils.IsSubfolder(dest, src)
 	if err != nil {
 		return err
 	} else if isSubFolder {

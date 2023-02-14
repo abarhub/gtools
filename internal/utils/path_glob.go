@@ -4,8 +4,10 @@ import "regexp"
 
 var regexMap = make(map[string]*regexp.Regexp)
 
+var regexDot = regexp.MustCompile("\\.")
 var regexSingleChar = regexp.MustCompile("\\?")
 var regexMultipleChar = regexp.MustCompile("\\*")
+var regexMultipleDirectory = regexp.MustCompile("\\*\\*")
 
 func MatchGlob(file string, glob string) (bool, error) {
 	var regexGlob *regexp.Regexp
@@ -24,7 +26,9 @@ func MatchGlob(file string, glob string) (bool, error) {
 }
 
 func convert(glob string) string {
+	glob = regexDot.ReplaceAllString(glob, "\\.")
 	glob = regexSingleChar.ReplaceAllString(glob, ".")
-	glob = regexMultipleChar.ReplaceAllString(glob, ".*")
+	glob = regexMultipleDirectory.ReplaceAllString(glob, ".*")
+	glob = regexMultipleChar.ReplaceAllString(glob, "[^\\/]*")
 	return glob
 }

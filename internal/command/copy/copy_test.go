@@ -52,7 +52,8 @@ func TestCopyDirectory(t *testing.T) {
 						dest := rootDir + "/" + tt.args.dest
 						t.Logf("src=%v", src)
 						t.Logf("dest=%v", dest)
-						if err := copyDirectory(src, dest); (err != nil) != tt.wantErr {
+						param := CopyParameters{}
+						if err := copyDirectory(src, dest, param); (err != nil) != tt.wantErr {
 							t.Errorf("CopyDir() error = %v, wantErr %v", err, tt.wantErr)
 						} else {
 							if !tt.wantErr {

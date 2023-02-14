@@ -1,4 +1,4 @@
-package utils
+package commandline
 
 import (
 	"fmt"
@@ -20,12 +20,17 @@ simple in CLI`,
 	},
 }
 
+var (
+	excludePath []string
+	includePath []string
+)
+
 var copyCmd = &cobra.Command{
 	Use:   "copy",
 	Short: "copy files",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		commandError = cmdCopy(copy2.CopyParameters{args[0], args[1]})
+		commandError = cmdCopy(copy2.CopyParameters{args[0], args[1], excludePath, includePath})
 		return nil
 	},
 }
@@ -52,6 +57,8 @@ var duCmd = &cobra.Command{
 
 func Run(args []string) error {
 
+	copyCmd.Flags().StringArrayVarP(&excludePath, "exclude", "e", []string{}, "Path to exclude")
+	copyCmd.Flags().StringArrayVarP(&includePath, "include", "i", []string{}, "Path to include")
 	rootCmd.AddCommand(copyCmd)
 
 	duCmd.Flags().BoolVarP(&humanReadable, "humanReadable", "r", false, "\"Human-readable\" output.  Use unit suffixes: Byte, Kilobyte, Megabyte, Gigabyte.")

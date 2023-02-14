@@ -1,13 +1,13 @@
 package main
 
 import (
-	"gtools/internal/utils"
+	"gtools/internal/commandline"
 	"log"
 	"os"
 )
 
 func main() {
-	err := utils.Run(os.Args[1:])
+	err := commandline.Run(os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -2,14 +2,17 @@ package copy
 
 import (
 	"fmt"
+	"gtools/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type CopyParameters struct {
-	PathSrc  string
-	PathDest string
+	PathSrc     string
+	PathDest    string
+	ExcludePath []string
+	IncludePath []string
 }
 
 /*
@@ -35,13 +38,10 @@ func isSubfolder(src string, dest string) (bool, error) {
 copy src to dest
 */
 func CopyDir(param CopyParameters) error {
-
-	var src = param.PathSrc
-	var dest = param.PathDest
-	return copyDirectory(src, dest)
+	return copyDirectory(param.PathSrc, param.PathDest, param)
 }
 
-func copyDirectory(src string, dest string) error {
+func copyDirectory(src string, dest string, param CopyParameters) error {
 
 	isSubFolder, err := isSubfolder(dest, src)
 	if err != nil {
@@ -82,25 +82,55 @@ func copyDirectory(src string, dest string) error {
 	}
 
 	for _, f := range files {
-		if f.IsDir() {
-			err = copyDirectory(src+"/"+f.Name(), dest+"/"+f.Name())
-			if err != nil {
-				return err
-			}
-		} else {
-			content, err := os.ReadFile(src + "/" + f.Name())
-			if err != nil {
-				return err
-			}
+		srcFile := src + "/" + f.Name()
+		toCopy, err := fileToCopy(srcFile, param)
+		if err != nil {
+			return err
+		} else if toCopy {
+			if f.IsDir() {
+				err = copyDirectory(srcFile, dest+"/"+f.Name(), param)
+				if err != nil {
+					return err
+				}
+			} else {
+				content, err := os.ReadFile(srcFile)
+				if err != nil {
+					return err
+				}
 
-			err = os.WriteFile(dest+"/"+f.Name(), content, 0755)
-			if err != nil {
-				return err
-			}
+				err = os.WriteFile(dest+"/"+f.Name(), content, 0755)
+				if err != nil {
+					return err
+				}
 
+			}
 		}
-
 	}
 
 	return nil
+}
+
+func fileToCopy(file string, param CopyParameters) (bool, error) {
+	if len(param.ExcludePath) > 0 {
+		for _, s := range param.ExcludePath {
+			match, err := utils.MatchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return false, nil
+			}
+		}
+	}
+	if len(param.IncludePath) > 0 {
+		for _, s := range param.IncludePath {
+			match, err := utils.MatchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	return true, nil
 }

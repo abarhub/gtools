@@ -1,4 +1,4 @@
-package utils
+package copy
 
 import (
 	"fmt"
@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+type CopyParameters struct {
+	PathSrc  string
+	PathDest string
+}
 
 /*
 *
@@ -29,7 +34,14 @@ func isSubfolder(src string, dest string) (bool, error) {
 /*
 copy src to dest
 */
-func CopyDir(src string, dest string) error {
+func CopyDir(param CopyParameters) error {
+
+	var src = param.PathSrc
+	var dest = param.PathDest
+	return copyDirectory(src, dest)
+}
+
+func copyDirectory(src string, dest string) error {
 
 	isSubFolder, err := isSubfolder(dest, src)
 	if err != nil {
@@ -71,7 +83,7 @@ func CopyDir(src string, dest string) error {
 
 	for _, f := range files {
 		if f.IsDir() {
-			err = CopyDir(src+"/"+f.Name(), dest+"/"+f.Name())
+			err = copyDirectory(src+"/"+f.Name(), dest+"/"+f.Name())
 			if err != nil {
 				return err
 			}

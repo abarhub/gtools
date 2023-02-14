@@ -3,27 +3,9 @@ package utils
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	copy2 "gtools/internal/command/copy"
+	"gtools/internal/command/du"
 )
-
-type Command int64
-
-const (
-	Copy Command = iota
-	Du
-)
-
-type Option int64
-
-const (
-	Include Option = iota
-	Exclude
-)
-
-type Parameters struct {
-	Command   Command
-	Arguments []string
-	Options   map[Option]string
-}
 
 var commandError error = nil
 
@@ -43,7 +25,7 @@ var copyCmd = &cobra.Command{
 	Short: "copy files",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		commandError = cmdCopy(args[0], args[1])
+		commandError = cmdCopy(copy2.CopyParameters{args[0], args[1]})
 		return nil
 	},
 }
@@ -63,7 +45,7 @@ var duCmd = &cobra.Command{
 		if len(args) > 0 {
 			path = args[0]
 		}
-		commandError = cmdDu(path, humanReadable, thresholdStr, maxDepth)
+		commandError = cmdDu(du.DuParameters{path, humanReadable, thresholdStr, maxDepth})
 		return nil
 	},
 }
@@ -85,10 +67,10 @@ func Run(args []string) error {
 	return commandError
 }
 
-func cmdCopy(src string, dest string) error {
-	return CopyDir(src, dest)
+func cmdCopy(param copy2.CopyParameters) error {
+	return copy2.CopyDir(param)
 }
 
-func cmdDu(path string, humanReadable bool, thresholdStr string, maxDepth int) error {
-	return DiskUsage(path, humanReadable, thresholdStr, maxDepth)
+func cmdDu(param du.DuParameters) error {
+	return du.DiskUsage(param)
 }

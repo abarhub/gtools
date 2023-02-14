@@ -1,11 +1,11 @@
-package utils
+package copy
 
 import (
 	"os"
 	"testing"
 )
 
-func TestCopyDir(t *testing.T) {
+func TestCopyDirectory(t *testing.T) {
 	type args struct {
 		src  string
 		dest string
@@ -52,7 +52,7 @@ func TestCopyDir(t *testing.T) {
 						dest := rootDir + "/" + tt.args.dest
 						t.Logf("src=%v", src)
 						t.Logf("dest=%v", dest)
-						if err := CopyDir(src, dest); (err != nil) != tt.wantErr {
+						if err := copyDirectory(src, dest); (err != nil) != tt.wantErr {
 							t.Errorf("CopyDir() error = %v, wantErr %v", err, tt.wantErr)
 						} else {
 							if !tt.wantErr {

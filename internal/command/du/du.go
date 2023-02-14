@@ -1,4 +1,4 @@
-package utils
+package du
 
 import (
 	"fmt"
@@ -6,6 +6,13 @@ import (
 	"path/filepath"
 	"strconv"
 )
+
+type DuParameters struct {
+	Path          string
+	HumanReadable bool
+	ThresholdStr  string
+	MaxDepth      int
+}
 
 func diskUsage(currPath string, info os.FileInfo, depth int, maxDepth int, humanReadable bool, threshold int64) int64 {
 	var size int64
@@ -58,9 +65,14 @@ func prettyPrintSize(size int64, humanReadable bool) {
 	}
 }
 
-func DiskUsage(path string, humanReadable bool, thresholdStr string, maxDepth int) error {
+func DiskUsage(param DuParameters) error {
 
 	var threshold int64
+
+	var path = param.Path
+	var humanReadable = param.HumanReadable
+	var thresholdStr = param.ThresholdStr
+	var maxDepth = param.MaxDepth
 
 	l := len(thresholdStr)
 	if l > 0 {

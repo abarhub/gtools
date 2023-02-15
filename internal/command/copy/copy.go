@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gtools/internal/utils"
 	"os"
+	"path/filepath"
 )
 
 type CopyParameters struct {
@@ -42,16 +43,18 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 		return fmt.Errorf("Source " + file.Name() + " is not a directory!")
 	}
 
+	dest2 := filepath.Clean(dest)
+
 	// create dest if not exists
-	if _, err := os.Stat(dest); os.IsNotExist(err) {
-		err = os.Mkdir(dest, 0755)
+	if _, err := os.Stat(dest2); os.IsNotExist(err) {
+		err = os.Mkdir(dest2, 0755)
 		if err != nil {
 			return err
 		}
 	}
 
 	// check dest exists
-	if _, err := os.Stat(dest); err != nil {
+	if _, err := os.Stat(dest2); err != nil {
 		return err
 	}
 
@@ -62,12 +65,13 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 
 	for _, f := range files {
 		srcFile := src + "/" + f.Name()
+		destFile := dest2 + "/" + f.Name()
 		toCopy, err := fileToCopy(srcFile, param)
 		if err != nil {
 			return err
 		} else if toCopy {
 			if f.IsDir() {
-				err = copyDirectory(srcFile, dest+"/"+f.Name(), param)
+				err = copyDirectory(srcFile, destFile, param)
 				if err != nil {
 					return err
 				}
@@ -77,7 +81,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 					return err
 				}
 
-				err = os.WriteFile(dest+"/"+f.Name(), content, 0755)
+				err = os.WriteFile(destFile, content, 0755)
 				if err != nil {
 					return err
 				}

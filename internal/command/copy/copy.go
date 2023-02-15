@@ -10,10 +10,11 @@ import (
 )
 
 type CopyParameters struct {
-	PathSrc     string
-	PathDest    string
-	ExcludePath []string
-	IncludePath []string
+	PathSrc       string
+	PathDest      string
+	ExcludePath   []string
+	IncludePath   []string
+	CreateDestDir bool
 }
 
 /*
@@ -47,11 +48,13 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 
 	dest2 := filepath.Clean(dest)
 
-	// create dest if not exists
-	if _, err := os.Stat(dest2); os.IsNotExist(err) {
-		err = os.Mkdir(dest2, 0755)
-		if err != nil {
-			return err
+	if param.CreateDestDir {
+		// create dest if not exists
+		if _, err := os.Stat(dest2); os.IsNotExist(err) {
+			err = os.Mkdir(dest2, 0755)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -78,6 +81,10 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 					return err
 				}
 			} else {
+				err = createDirIfNeeded(destFile)
+				if err != nil {
+					return err
+				}
 				err = copyFile(srcFile, destFile)
 				if err != nil {
 					return err
@@ -87,6 +94,19 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 		}
 	}
 
+	return nil
+}
+
+func createDirIfNeeded(file string) error {
+	parent := filepath.Dir(file)
+	if parent != "" && parent != "." && parent != "/" {
+		if _, err := os.Stat(parent); os.IsNotExist(err) {
+			err = os.Mkdir(parent, 0755)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

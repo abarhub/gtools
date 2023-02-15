@@ -53,6 +53,7 @@ func TestCopyDirectory(t *testing.T) {
 						t.Logf("src=%v", src)
 						t.Logf("dest=%v", dest)
 						param := CopyParameters{}
+						param.CreateDestDir = true
 						if err := copyDirectory(src, dest, param); (err != nil) != tt.wantErr {
 							t.Errorf("CopyDir() error = %v, wantErr %v", err, tt.wantErr)
 						} else {

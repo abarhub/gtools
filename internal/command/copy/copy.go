@@ -3,7 +3,9 @@ package copy
 import (
 	"fmt"
 	"gtools/internal/utils"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -23,7 +25,7 @@ func CopyDir(param CopyParameters) error {
 
 func copyDirectory(src string, dest string, param CopyParameters) error {
 
-	isSubFolder, err := utils.IsSubfolder(dest, src)
+	isSubFolder, err := utils.IsSubfolder(src, dest)
 	if err != nil {
 		return err
 	} else if isSubFolder {
@@ -64,8 +66,8 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	}
 
 	for _, f := range files {
-		srcFile := src + "/" + f.Name()
-		destFile := dest2 + "/" + f.Name()
+		srcFile := path.Join(src, f.Name())
+		destFile := path.Join(dest2, f.Name())
 		toCopy, err := fileToCopy(srcFile, param)
 		if err != nil {
 			return err
@@ -76,12 +78,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 					return err
 				}
 			} else {
-				content, err := os.ReadFile(srcFile)
-				if err != nil {
-					return err
-				}
-
-				err = os.WriteFile(destFile, content, 0755)
+				err = copyFile(srcFile, destFile)
 				if err != nil {
 					return err
 				}
@@ -91,6 +88,22 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	}
 
 	return nil
+}
+
+func copyFile(srcFile, destFile string) error {
+	source, err := os.Open(srcFile)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(destFile)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	return err
 }
 
 func fileToCopy(file string, param CopyParameters) (bool, error) {

@@ -65,9 +65,6 @@ func Test_decode(t *testing.T) {
 			} else if buf.String() != tt.args.out {
 				t.Errorf("decode() out = %v, want %v", buf.String(), tt.args.out)
 			}
-			//if err := decode(tt.args.in, tt.args.out, tt.args.nb); (err != nil) != tt.wantErr {
-			//	t.Errorf("decode() error = %v, wantErr %v", err, tt.wantErr)
-			//}
 		})
 	}
 }

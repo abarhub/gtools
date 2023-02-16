@@ -171,13 +171,14 @@ func decode(in *bufio.Reader, out *bufio.Writer, nb int) error {
 		if len(buf) >= nb {
 			if true {
 				var buf2 = make([]byte, b64.StdEncoding.DecodedLen(len(buf)))
-				_, err = b64.StdEncoding.Decode(buf2, buf)
+				var n int
+				n, err = b64.StdEncoding.Decode(buf2, buf)
 				if err != nil {
 					return fmt.Errorf("error decoding base64: %v", err)
 				}
 				//s := b64.StdEncoding.EncodeToString(buf)
 				//_, err = out.WriteString(s)
-				_, err = out.Write(buf2)
+				_, err = out.Write(buf2[:n])
 			} else {
 				s := b64.StdEncoding.EncodeToString(buf)
 				_, err = out.WriteString(s)
@@ -191,11 +192,11 @@ func decode(in *bufio.Reader, out *bufio.Writer, nb int) error {
 	}
 	if len(buf) > 0 {
 		var buf2 = make([]byte, b64.StdEncoding.DecodedLen(len(buf)))
-		_, err := b64.StdEncoding.Decode(buf2, buf)
+		n, err := b64.StdEncoding.Decode(buf2, buf)
 		if err != nil {
 			return fmt.Errorf("error decoding base64: %v", err)
 		}
-		_, err = out.Write(buf2)
+		_, err = out.Write(buf2[:n])
 		if err != nil {
 			return err
 		}

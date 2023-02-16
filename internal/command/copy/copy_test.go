@@ -2,6 +2,7 @@ package copy
 
 import (
 	"os"
+	"path"
 	"testing"
 )
 
@@ -30,8 +31,8 @@ func TestCopyDirectory(t *testing.T) {
 			t.Logf("src param=%v", tt.args.src)
 			t.Logf("dest param=%v", tt.args.dest)
 			rootDir := t.TempDir()
-			temp1 := rootDir + "/test1"
-			temp2 := rootDir + "/test2"
+			temp1 := path.Join(rootDir, "test1")
+			temp2 := path.Join(rootDir, "test2")
 			t.Logf("temp1=%v", temp1)
 			t.Logf("temp2=%v", temp2)
 			err2 := os.Mkdir(temp1, 0755)
@@ -39,7 +40,7 @@ func TestCopyDirectory(t *testing.T) {
 				t.Errorf("CopyDir() error = %v", err2)
 
 			} else {
-				err3 := os.WriteFile(temp1+"/toto.txt", []byte{1, 2, 3}, 0755)
+				err3 := os.WriteFile(path.Join(temp1, "toto.txt"), []byte{1, 2, 3}, 0755)
 				if err3 != nil {
 					t.Errorf("CopyDir() error = %v", err3)
 
@@ -48,8 +49,8 @@ func TestCopyDirectory(t *testing.T) {
 					if err4 != nil {
 						t.Errorf("CopyDir() error = %v", err4)
 					} else {
-						src := rootDir + "/" + tt.args.src
-						dest := rootDir + "/" + tt.args.dest
+						src := path.Join(rootDir, tt.args.src)
+						dest := path.Join(rootDir, tt.args.dest)
 						t.Logf("src=%v", src)
 						t.Logf("dest=%v", dest)
 						param := CopyParameters{}
@@ -58,8 +59,11 @@ func TestCopyDirectory(t *testing.T) {
 							t.Errorf("CopyDir() error = %v, wantErr %v", err, tt.wantErr)
 						} else {
 							if !tt.wantErr {
-								content, err5 := os.ReadFile(dest + "/toto.txt")
+								file := path.Join(dest, "toto.txt")
+								content, err5 := os.ReadFile(file)
 								if err5 != nil {
+									t.Logf("file=%v", file)
+									t.Logf("file clean=%v", path.Clean(file))
 									t.Errorf("CopyDir() error = %v", err5)
 								} else {
 									if len(content) != 3 || content[0] != 1 || content[1] != 2 || content[2] != 3 {

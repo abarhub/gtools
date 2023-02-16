@@ -18,59 +18,39 @@ type Base64Parameters struct {
 }
 
 func EncodeDecodeBase64(param Base64Parameters) error {
+
+	// open input
+	in, err := param.Input.Open()
+	if err != nil {
+		return err
+	}
+	defer param.Input.Close()
+
+	// open output
+	out, err := param.Output.Open()
+	if err != nil {
+		return err
+	}
+	defer param.Output.Close()
+
 	if param.Encode {
-		// open input
-		in, err := param.Input.Open()
-		if err != nil {
-			return err
-		}
-		defer param.Input.Close()
-
-		// open output
-		out, err := param.Output.Open()
-		if err != nil {
-			return err
-		}
-		defer param.Output.Close()
-
 		err = encode(in, out, bufEncoding)
 		if err != nil {
 			return err
 		}
-
-		err = out.Flush()
-		if err != nil {
-			return err
-		}
-		return nil
 	} else {
-
-		// open input
-		in, err := param.Input.Open()
-		if err != nil {
-			return err
-		}
-		defer param.Input.Close()
-
-		// open output
-		out, err := param.Output.Open()
-		if err != nil {
-			return err
-		}
-		defer param.Output.Close()
-
 		err = decode(in, out, bufEncoding)
 		if err != nil {
 			return err
 		}
-
-		err = out.Flush()
-		if err != nil {
-			return err
-		}
-
-		return nil
 	}
+
+	err = out.Flush()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func encode(in *bufio.Reader, out *bufio.Writer, nb int) error {

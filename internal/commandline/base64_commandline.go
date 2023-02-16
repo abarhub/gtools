@@ -15,7 +15,6 @@ var (
 var base64Cmd = &cobra.Command{
 	Use:   "base64",
 	Short: "encode/decode in base64",
-	//Args:  cobra.MaximumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var input *utils.InputParameter
 		var output *utils.OutputParameter
@@ -39,8 +38,7 @@ var base64Cmd = &cobra.Command{
 		} else {
 			output, err = utils.StdOutputParameter()
 		}
-		param := base64.Base64Parameters{input, output, fileSrc, fileDest,
-			encode}
+		param := base64.Base64Parameters{input, output, encode}
 		commandError = cmdBase64(param)
 		return nil
 	},

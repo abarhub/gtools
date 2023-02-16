@@ -8,11 +8,9 @@ import (
 )
 
 type Base64Parameters struct {
-	Input    *utils.InputParameter
-	Output   *utils.OutputParameter
-	FileSrc  string
-	FileDest string
-	Encode   bool
+	Input  *utils.InputParameter
+	Output *utils.OutputParameter
+	Encode bool
 }
 
 func EncodeDecodeBase64(param Base64Parameters) error {

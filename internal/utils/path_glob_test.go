@@ -1,6 +1,9 @@
 package utils
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestMatchGlob(t *testing.T) {
 	type args struct {
@@ -48,7 +51,9 @@ func Test_convert(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases.
+		{"test1", args{"abc"}, "abc"},
+		{"test2", args{"abc.toto"}, "abc\\.toto"},
+		{"test3", args{"abc*toto"}, "abc[^\\/]*toto"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -57,4 +62,16 @@ func Test_convert(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ExampleMatchGlob() {
+	fmt.Println(MatchGlob("abc.txt", "*.txt"))
+	fmt.Println(MatchGlob("abc.doc", "*.txt"))
+	fmt.Println(MatchGlob("toto/tata/test.txt", "**/*.txt"))
+	fmt.Println(MatchGlob("toto/tata/test.doc", "**/*.txt"))
+	// Output:
+	// true <nil>
+	// false <nil>
+	// true <nil>
+	// false <nil>
 }

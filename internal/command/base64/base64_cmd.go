@@ -9,7 +9,7 @@ import (
 )
 
 // encoding by buffer. multiple of 4
-const bufEncoding = 100
+const defaultBufferSize = 100
 
 type Base64Parameters struct {
 	Input      *utils.InputParameter
@@ -34,8 +34,8 @@ func EncodeDecodeBase64(param Base64Parameters) error {
 	}
 	defer param.Output.Close()
 
-	var bufferSize = bufEncoding
-	if bufferSize <= 0 {
+	var bufferSize = defaultBufferSize
+	if param.BufferSize > 0 {
 		bufferSize = param.BufferSize
 	}
 

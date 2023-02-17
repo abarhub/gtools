@@ -23,7 +23,7 @@ simple in CLI`,
 	},
 }
 
-func Run(args []string) error {
+func Run() error {
 
 	ConfigureCopyCommandLine(rootCmd)
 	ConfigureDuCommandLine(rootCmd)

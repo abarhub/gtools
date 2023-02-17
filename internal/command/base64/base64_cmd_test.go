@@ -37,15 +37,15 @@ func TestEncodeDecodeBase64(t *testing.T) {
 			if err3 != nil {
 				t.Errorf("EncodeDecodeBase64() error = %v", err3)
 			} else {
-				input, err := utils.FileInputParameter(fileInputPath)
+				input, err := utils.FileInputParameter(fileInputPath, 0)
 				if err != nil {
 					t.Errorf("EncodeDecodeBase64() error = %v", err)
 				} else {
-					output, err := utils.FileOutputParameter(fileOutputPath)
+					output, err := utils.FileOutputParameter(fileOutputPath, 0)
 					if err != nil {
 						t.Errorf("EncodeDecodeBase64() error = %v", err)
 					} else {
-						param := Base64Parameters{input, output, tt.args.encode}
+						param := Base64Parameters{input, output, tt.args.encode, 0}
 						if err := EncodeDecodeBase64(param); (err != nil) != tt.wantErr {
 							t.Errorf("EncodeDecodeBase64() error = %v, wantErr %v", err, tt.wantErr)
 						} else {

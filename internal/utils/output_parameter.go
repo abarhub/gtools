@@ -14,20 +14,21 @@ const (
 )
 
 type OutputParameter struct {
-	kind     outputType
-	fileDest string
-	file     *os.File
+	kind       outputType
+	fileDest   string
+	file       *os.File
+	bufferSize int
 }
 
-func FileOutputParameter(file string) (*OutputParameter, error) {
+func FileOutputParameter(file string, bufferSize int) (*OutputParameter, error) {
 	if file == "" {
 		return nil, fmt.Errorf("filename emtpy")
 	}
-	return &OutputParameter{fileOutput, file, nil}, nil
+	return &OutputParameter{fileOutput, file, nil, bufferSize}, nil
 }
 
 func StdOutputParameter() (*OutputParameter, error) {
-	return &OutputParameter{stdOutput, "", nil}, nil
+	return &OutputParameter{stdOutput, "", nil, 0}, nil
 }
 
 func (output *OutputParameter) Open() (*bufio.Writer, error) {
@@ -39,7 +40,12 @@ func (output *OutputParameter) Open() (*bufio.Writer, error) {
 		if err != nil {
 			return nil, err
 		}
-		out := bufio.NewWriter(file)
+		var out *bufio.Writer
+		if output.bufferSize > 0 {
+			out = bufio.NewWriterSize(file, output.bufferSize)
+		} else {
+			out = bufio.NewWriter(file)
+		}
 		return out, nil
 	} else {
 		return nil, fmt.Errorf("invalide type of file")

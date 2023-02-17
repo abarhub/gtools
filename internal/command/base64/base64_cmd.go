@@ -12,9 +12,10 @@ import (
 const bufEncoding = 100
 
 type Base64Parameters struct {
-	Input  *utils.InputParameter
-	Output *utils.OutputParameter
-	Encode bool
+	Input      *utils.InputParameter
+	Output     *utils.OutputParameter
+	Encode     bool
+	BufferSize int
 }
 
 func EncodeDecodeBase64(param Base64Parameters) error {
@@ -33,13 +34,18 @@ func EncodeDecodeBase64(param Base64Parameters) error {
 	}
 	defer param.Output.Close()
 
+	var bufferSize = bufEncoding
+	if bufferSize <= 0 {
+		bufferSize = param.BufferSize
+	}
+
 	if param.Encode {
-		err = encode(in, out, bufEncoding)
+		err = encode(in, out, bufferSize)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = decode(in, out, bufEncoding)
+		err = decode(in, out, bufferSize)
 		if err != nil {
 			return err
 		}

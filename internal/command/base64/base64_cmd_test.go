@@ -157,3 +157,88 @@ func Test_encode(t *testing.T) {
 		})
 	}
 }
+
+func TestEncodeDecodeBase64EncodeDecode(t *testing.T) {
+	type args struct {
+		input, output string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"test1", args{"abcdef", "YWJjZGVm"}, false},
+		{"test2", args{"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"}, false},
+		{"test3", args{"1234567890", "MTIzNDU2Nzg5MA=="}, false},
+		{"test4", args{"abcdefghijklmnopqrstuvwxyz", "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXo="}, false},
+		{"test5", args{"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo="}, false},
+		{"test6", args{",;:!*$=)@_-('\"'&~#{[|`\\^@]}<>?./§%µ¤ ", "LDs6ISokPSlAXy0oJyInJn4je1t8YFxeQF19PD4/Li/CpyXCtcKkIA=="}, false},
+		{"test7", args{"àèéïöüÿûôñç_ÀÈÉÏÖÜŸÛÔÑÇ", "w6DDqMOpw6/DtsO8w7/Du8O0w7HDp1/DgMOIw4nDj8OWw5zFuMObw5TDkcOH"}, false},
+		{"test8", args{"\u0000\u0001\u0002\u0003", "AAECAw=="}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rootDir := t.TempDir()
+			fileInputPath := path.Join(rootDir, "input.txt")
+			fileOutputPath := path.Join(rootDir, "output.txt")
+
+			err3 := os.WriteFile(fileInputPath, []byte(tt.args.input), 0755)
+			if err3 != nil {
+				t.Errorf("EncodeDecodeBase64() error = %v", err3)
+			} else {
+				input, err := utils.FileInputParameter(fileInputPath, 0)
+				if err != nil {
+					t.Errorf("EncodeDecodeBase64() error = %v", err)
+				} else {
+					output, err := utils.FileOutputParameter(fileOutputPath, 0)
+					if err != nil {
+						t.Errorf("EncodeDecodeBase64() error = %v", err)
+					} else {
+						param := Base64Parameters{input, output, true, 0}
+						if err := EncodeDecodeBase64(param); (err != nil) != tt.wantErr {
+							t.Errorf("EncodeDecodeBase64() error = %v, wantErr %v", err, tt.wantErr)
+						} else {
+							buf, err := os.ReadFile(fileOutputPath)
+							if err != nil {
+								t.Errorf("EncodeDecodeBase64() error = %v", err)
+							} else if string(buf[:]) != tt.args.output {
+								t.Errorf("EncodeDecodeBase64() output = %v, want %v", string(buf[:]), tt.args.output)
+							} else {
+								fileInputPath2 := path.Join(rootDir, "input2.txt")
+								fileOutputPath2 := path.Join(rootDir, "output2.txt")
+
+								err3 := os.WriteFile(fileInputPath2, buf, 0755)
+								if err3 != nil {
+									t.Errorf("EncodeDecodeBase64() error = %v", err3)
+								} else {
+									input, err := utils.FileInputParameter(fileInputPath2, 0)
+									if err != nil {
+										t.Errorf("EncodeDecodeBase64() error = %v", err)
+									} else {
+										output, err := utils.FileOutputParameter(fileOutputPath2, 0)
+										if err != nil {
+											t.Errorf("EncodeDecodeBase64() error = %v", err)
+										} else {
+											param := Base64Parameters{input, output, false, 0}
+											if err := EncodeDecodeBase64(param); (err != nil) != tt.wantErr {
+												t.Errorf("EncodeDecodeBase64() error = %v, wantErr %v", err, tt.wantErr)
+											} else {
+												buf, err := os.ReadFile(fileOutputPath2)
+												if err != nil {
+													t.Errorf("EncodeDecodeBase64() error = %v", err)
+												} else if string(buf[:]) != tt.args.input {
+													t.Errorf("encode() out = %v, want %v", string(buf), tt.args.input)
+												}
+											}
+										}
+									}
+								}
+
+							}
+						}
+					}
+				}
+			}
+		})
+	}
+}

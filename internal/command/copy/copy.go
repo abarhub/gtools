@@ -10,11 +10,12 @@ import (
 )
 
 type CopyParameters struct {
-	PathSrc       string
-	PathDest      string
-	ExcludePath   []string
-	IncludePath   []string
-	CreateDestDir bool
+	PathSrc        string
+	PathDest       string
+	ExcludePath    []string
+	IncludePath    []string
+	CreateDestDir  bool
+	GlobDoubleStar bool
 }
 
 /*
@@ -129,7 +130,7 @@ func copyFile(srcFile, destFile string) error {
 func fileToCopy(file string, param CopyParameters) (bool, error) {
 	if len(param.ExcludePath) > 0 {
 		for _, s := range param.ExcludePath {
-			match, err := utils.MatchGlob(file, s)
+			match, err := matchGlob(file, s, param)
 			if err != nil {
 				return false, err
 			} else if match {
@@ -139,7 +140,7 @@ func fileToCopy(file string, param CopyParameters) (bool, error) {
 	}
 	if len(param.IncludePath) > 0 {
 		for _, s := range param.IncludePath {
-			match, err := utils.MatchGlob(file, s)
+			match, err := matchGlob(file, s, param)
 			if err != nil {
 				return false, err
 			} else if match {
@@ -149,4 +150,12 @@ func fileToCopy(file string, param CopyParameters) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
+	if param.GlobDoubleStar {
+		return utils.MatchGlob(file, pattern)
+	} else {
+		return filepath.Match(pattern, file)
+	}
 }

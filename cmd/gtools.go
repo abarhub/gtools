@@ -9,6 +9,10 @@ import (
 func main() {
 	err := commandline.Run(os.Args[1:])
 	if err != nil {
-		log.Fatal(err)
+		if err.Error() != "" {
+			log.Fatal(err)
+		} else {
+			os.Exit(1)
+		}
 	}
 }

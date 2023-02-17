@@ -9,6 +9,8 @@ const VersionGTools = "1.0.0"
 
 var commandError error = nil
 
+var EmptyError error = fmt.Errorf("")
+
 var rootCmd = &cobra.Command{
 	Use:     "gtools",
 	Version: VersionGTools,
@@ -28,7 +30,7 @@ func Run(args []string) error {
 	ConfigureBase64CommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		return fmt.Errorf("Whoops. There was an error while executing your CLI '%s'", err)
+		return EmptyError
 	}
 
 	return commandError

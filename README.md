@@ -10,6 +10,11 @@ to build executable
 go build ./cmd/gtools.go
 ```
 
+to run tests
+```shell
+go test ./...
+```
+
 man
 ```
 Usage:

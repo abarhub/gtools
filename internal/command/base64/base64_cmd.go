@@ -54,30 +54,43 @@ func EncodeDecodeBase64(param Base64Parameters) error {
 }
 
 func encode(in *bufio.Reader, out *bufio.Writer, nb int) error {
-	var buf = []byte{}
+	var buf = make([]byte, nb)
+	var buf3 = []byte{}
 	for {
-		c, err := in.ReadByte()
+		nb2, err := in.Read(buf)
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			return err
 		}
-		buf = append(buf, c)
-		lenBuf := len(buf)
+		buf3 = append(buf3, buf[:nb2]...)
+		lenBuf := len(buf3)
 		if lenBuf >= nb && b64.StdEncoding.EncodedLen(lenBuf) < b64.StdEncoding.EncodedLen(lenBuf+1) {
-			var buf2 = make([]byte, b64.StdEncoding.EncodedLen(len(buf)))
-			b64.StdEncoding.Encode(buf2, buf)
-			_, err = out.Write(buf2)
-			if err != nil {
-				return err
+			n := lenBuf
+			for n > 0 {
+				if b64.StdEncoding.EncodedLen(n) < b64.StdEncoding.EncodedLen(n+1) {
+					break
+				}
 			}
-			buf = []byte{}
+			if n > 0 {
+				var buf2 = make([]byte, b64.StdEncoding.EncodedLen(n))
+				b64.StdEncoding.Encode(buf2, buf3[:n])
+				_, err = out.Write(buf2)
+				if err != nil {
+					return err
+				}
+				var buf4 = buf3
+				buf3 = []byte{}
+				if n < lenBuf {
+					buf3 = append(buf3, buf4[n+1:]...)
+				}
+			}
 		}
 	}
-	if len(buf) > 0 {
+	if len(buf3) > 0 {
 		var err error
-		var buf2 = make([]byte, b64.StdEncoding.EncodedLen(len(buf)))
-		b64.StdEncoding.Encode(buf2, buf)
+		var buf2 = make([]byte, b64.StdEncoding.EncodedLen(len(buf3)))
+		b64.StdEncoding.Encode(buf2, buf3)
 		_, err = out.Write(buf2)
 		if err != nil {
 			return err

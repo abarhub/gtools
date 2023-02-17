@@ -242,3 +242,66 @@ func TestEncodeDecodeBase64EncodeDecode(t *testing.T) {
 		})
 	}
 }
+
+func benchmarkEncodeDecodeBase64(b *testing.B, nb int, bufferSize int) {
+	rootDir := b.TempDir()
+	fileInputPath := path.Join(rootDir, "input.txt")
+	fileOutputPath := path.Join(rootDir, "output.txt")
+
+	var input []byte
+	input = []byte{}
+	for i := 0; i < nb; i++ {
+		input = append(input, 'a')
+	}
+
+	err3 := os.WriteFile(fileInputPath, input, 0755)
+	if err3 != nil {
+		b.Errorf("EncodeDecodeBase64() error = %v", err3)
+	} else {
+		input, err := utils.FileInputParameter(fileInputPath, bufferSize)
+		if err != nil {
+			b.Errorf("EncodeDecodeBase64() error = %v", err)
+		} else {
+			output, err := utils.FileOutputParameter(fileOutputPath, bufferSize)
+			if err != nil {
+				b.Errorf("EncodeDecodeBase64() error = %v", err)
+			} else {
+				param := Base64Parameters{input, output, true, bufferSize}
+				if err := EncodeDecodeBase64(param); (err != nil) != false {
+					b.Errorf("EncodeDecodeBase64() error = %v, wantErr %v", err, false)
+				} else {
+					_, err := os.ReadFile(fileOutputPath)
+					if err != nil {
+						b.Errorf("EncodeDecodeBase64() error = %v", err)
+					} /*else if string(buf[:]) != tt.args.output {
+						b.Errorf("EncodeDecodeBase64() output = %v, want %v", string(buf[:]), tt.args.output)
+					}*/
+				}
+			}
+		}
+	}
+}
+
+func BenchmarkEncodeDecodeBase64_100(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchmarkEncodeDecodeBase64(b, 10_000_000, 100)
+	}
+}
+
+func BenchmarkEncodeDecodeBase64_1000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchmarkEncodeDecodeBase64(b, 10_000_000, 1000)
+	}
+}
+
+func BenchmarkEncodeDecodeBase64_10000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchmarkEncodeDecodeBase64(b, 10_000_000, 10000)
+	}
+}
+
+func BenchmarkEncodeDecodeBase64_100000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		benchmarkEncodeDecodeBase64(b, 10_000_000, 100000)
+	}
+}

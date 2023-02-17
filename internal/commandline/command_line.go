@@ -5,11 +5,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const VersionGTools = "1.0.0"
+
 var commandError error = nil
 
 var rootCmd = &cobra.Command{
-	Use:   "gtools",
-	Short: "gtools - a simple CLI tools",
+	Use:     "gtools",
+	Version: VersionGTools,
+	Short:   "gtools - a simple CLI tools",
 	Long: `gtools is a super simple CLI tools
    
 simple in CLI`,

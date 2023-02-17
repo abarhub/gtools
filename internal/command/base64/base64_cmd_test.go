@@ -85,6 +85,14 @@ func Test_decode(t *testing.T) {
 			"abcaaaadg4f5dbvc415b64fdgs56b45fg45bv4c5b4xcvb4xc5b4cvx4132",
 			1000}, false},
 		{"test5", args{"YWJjYWJjYWJj", "abcabcabc", 4}, false},
+		{"test6", args{"YWJjYWJjYWJj", "abcabcabc", 5}, false},
+		{"test7", args{"YWJjYWJjYWJj", "abcabcabc", 6}, false},
+		{"test8", args{"YWJjYWJjYWJj", "abcabcabc", 7}, false},
+		{"test9", args{"YWJjYWJjYWJj", "abcabcabc", 8}, false},
+		{"test10", args{"YWJjYWJjYWJj", "abcabcabc", 9}, false},
+		{"test11", args{"YWJjYWJjYWJj", "abcabcabc", 1}, false},
+		{"test12", args{"YWJjYWJjYWJj", "abcabcabc", 2}, false},
+		{"test13", args{"YWJjYWJjYWJj", "abcabcabc", 3}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -122,6 +130,14 @@ func Test_encode(t *testing.T) {
 		{"test3", args{"abcaaaadg4f5dbvc415b64fdgs56b45fg45bv4c5b4xcvb4xc5b4cvx4132",
 			"YWJjYWFhYWRnNGY1ZGJ2YzQxNWI2NGZkZ3M1NmI0NWZnNDVidjRjNWI0eGN2YjR4YzViNGN2eDQxMzI=", 16}, false},
 		{"test4", args{"abcabcabc", "YWJjYWJjYWJj", 4}, false},
+		{"test5", args{"abcabcabc", "YWJjYWJjYWJj", 5}, false},
+		{"test6", args{"abcabcabc", "YWJjYWJjYWJj", 6}, false},
+		{"test7", args{"abcabcabc", "YWJjYWJjYWJj", 7}, false},
+		{"test8", args{"abcabcabc", "YWJjYWJjYWJj", 8}, false},
+		{"test9", args{"abcabcabc", "YWJjYWJjYWJj", 9}, false},
+		{"test10", args{"abcabcabc", "YWJjYWJjYWJj", 1}, false},
+		{"test11", args{"abcabcabc", "YWJjYWJjYWJj", 2}, false},
+		{"test12", args{"abcabcabc", "YWJjYWJjYWJj", 3}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

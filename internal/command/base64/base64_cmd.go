@@ -71,6 +71,7 @@ func encode(in *bufio.Reader, out *bufio.Writer, nb int) error {
 				if b64.StdEncoding.EncodedLen(n) < b64.StdEncoding.EncodedLen(n+1) {
 					break
 				}
+				n = n - 1
 			}
 			if n > 0 {
 				var buf2 = make([]byte, b64.StdEncoding.EncodedLen(n))
@@ -101,32 +102,54 @@ func encode(in *bufio.Reader, out *bufio.Writer, nb int) error {
 }
 
 func decode(in *bufio.Reader, out *bufio.Writer, nb int) error {
-	var buf = []byte{}
+	// nb must be a multiple of 4
+	nb = nb + (nb % 4)
+	var buf = make([]byte, nb)
+	var buf3 = []byte{}
 	for {
-		c, err := in.ReadByte()
+		nb2, err := in.Read(buf)
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			return err
 		}
-		buf = append(buf, c)
-		if len(buf) >= nb {
-			var buf2 = make([]byte, b64.StdEncoding.DecodedLen(len(buf)))
-			var n int
-			n, err = b64.StdEncoding.Decode(buf2, buf)
-			if err != nil {
-				return fmt.Errorf("error decoding base64: %v", err)
+		buf3 = append(buf3, buf[:nb2]...)
+		if len(buf3) >= nb {
+			n := len(buf3)
+			for n > 0 {
+				if b64.StdEncoding.DecodedLen(n) < b64.StdEncoding.DecodedLen(n+1) {
+					break
+				}
+				n = n - 1
 			}
-			_, err = out.Write(buf2[:n])
-			if err != nil {
-				return err
+			if n > 0 {
+				var buf2 = make([]byte, b64.StdEncoding.DecodedLen(n+1))
+				var n2 int
+				var buf5 []byte
+				if n >= len(buf3) {
+					buf5 = buf3
+				} else {
+					buf5 = buf3[:n+1]
+				}
+				n2, err = b64.StdEncoding.Decode(buf2, buf5)
+				if err != nil {
+					return fmt.Errorf("error decoding base64: %v", err)
+				}
+				_, err = out.Write(buf2[:n2])
+				if err != nil {
+					return err
+				}
+				var buf4 = buf3
+				buf3 = []byte{}
+				if n < len(buf4) {
+					buf3 = append(buf3, buf4[n+1:]...)
+				}
 			}
-			buf = []byte{}
 		}
 	}
-	if len(buf) > 0 {
-		var buf2 = make([]byte, b64.StdEncoding.DecodedLen(len(buf)))
-		n, err := b64.StdEncoding.Decode(buf2, buf)
+	if len(buf3) > 0 {
+		var buf2 = make([]byte, b64.StdEncoding.DecodedLen(len(buf3)))
+		n, err := b64.StdEncoding.Decode(buf2, buf3)
 		if err != nil {
 			return fmt.Errorf("error decoding base64: %v", err)
 		}

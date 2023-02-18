@@ -118,6 +118,10 @@ func TestCopyDir(t *testing.T) {
 		{"test3", args{"src", "dest", []string{"*/test1.txt", "*/test2.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt", "test2.txt"})}, false},
 		{"test4", args{"src", "dest2", []string{}, []string{}, false, false, defaultFiles}, true},
 		{"test5", args{"src", "dest2", []string{}, []string{}, false, true, defaultFiles}, false},
+		{"test6", args{"src", "dest", []string{"*/*.log"}, []string{}, false, false, remove(defaultFiles, []string{"test5.log", "dir2/test02_4.log"})}, false},
+		{"test7", args{"src", "dest", []string{}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test8", args{"src", "dest", []string{"*/dir1"}, []string{}, false, false, remove(defaultFiles, []string{"dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv"})}, false},
+		{"test9", args{"src", "dest", []string{"*/dir1"}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

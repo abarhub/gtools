@@ -68,7 +68,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	for _, f := range files {
 		srcFile := path.Join(src, f.Name())
 		destFile := path.Join(dest2, f.Name())
-		toCopy, err := fileToCopy(srcFile, param)
+		toCopy, err := fileToCopy(srcFile, param, true)
 		if err != nil {
 			return err
 		} else if toCopy {
@@ -78,15 +78,19 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 					return err
 				}
 			} else {
-				err = createDirIfNeeded(destFile)
+				toCopy, err = fileToCopy(srcFile, param, false)
 				if err != nil {
 					return err
+				} else if toCopy {
+					err = createDirIfNeeded(destFile)
+					if err != nil {
+						return err
+					}
+					err = copyFile(srcFile, destFile)
+					if err != nil {
+						return err
+					}
 				}
-				err = copyFile(srcFile, destFile)
-				if err != nil {
-					return err
-				}
-
 			}
 		}
 	}
@@ -123,8 +127,8 @@ func copyFile(srcFile, destFile string) error {
 	return err
 }
 
-func fileToCopy(file string, param CopyParameters) (bool, error) {
-	if len(param.ExcludePath) > 0 {
+func fileToCopy(file string, param CopyParameters, exclude bool) (bool, error) {
+	if exclude && len(param.ExcludePath) > 0 {
 		for _, s := range param.ExcludePath {
 			match, err := matchGlob(file, s, param)
 			if err != nil {
@@ -134,7 +138,7 @@ func fileToCopy(file string, param CopyParameters) (bool, error) {
 			}
 		}
 	}
-	if len(param.IncludePath) > 0 {
+	if !exclude && len(param.IncludePath) > 0 {
 		for _, s := range param.IncludePath {
 			match, err := matchGlob(file, s, param)
 			if err != nil {

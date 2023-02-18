@@ -13,7 +13,7 @@ var (
 )
 
 var copyCmd = &cobra.Command{
-	Use:   "copy",
+	Use:   "copy [flags] src dest",
 	Short: "copy files",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -23,6 +23,7 @@ var copyCmd = &cobra.Command{
 		commandError = cmdCopy(param)
 		return nil
 	},
+	DisableFlagsInUseLine: true,
 }
 
 func cmdCopy(param copy2.CopyParameters) error {
@@ -31,8 +32,8 @@ func cmdCopy(param copy2.CopyParameters) error {
 
 func ConfigureCopyCommandLine(rootCmd *cobra.Command) {
 
-	copyCmd.Flags().StringArrayVarP(&excludePath, "exclude", "e", []string{}, "Path to exclude")
-	copyCmd.Flags().StringArrayVarP(&includePath, "include", "i", []string{}, "Path to include")
+	copyCmd.Flags().StringSliceVarP(&excludePath, "exclude", "e", []string{}, "Path to exclude")
+	copyCmd.Flags().StringSliceVarP(&includePath, "include", "i", []string{}, "Path to include")
 	copyCmd.Flags().BoolVarP(&createDestDir, "createDestDir", "c", false, "Create destination directory if not exists")
 	copyCmd.Flags().BoolVarP(&globDoubleStar, "doubleStar", "d", false, "Use global with double star for exclude and include")
 	rootCmd.AddCommand(copyCmd)

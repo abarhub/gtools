@@ -59,11 +59,6 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 		}
 	}
 
-	// check dest exists
-	if _, err := os.Stat(dest2); err != nil {
-		return err
-	}
-
 	files, err := os.ReadDir(src)
 	if err != nil {
 		return err

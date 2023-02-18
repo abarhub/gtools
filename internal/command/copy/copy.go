@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 type CopyParameters struct {
@@ -151,6 +152,6 @@ func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
 	if param.GlobDoubleStar {
 		return utils.MatchGlob(file, pattern)
 	} else {
-		return filepath.Match(pattern, file)
+		return filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
 	}
 }

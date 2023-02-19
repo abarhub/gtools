@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -335,6 +336,8 @@ func createTestDirectory(t *testing.T, rootDir string) bool {
 }
 
 func Test_fileToCopy(t *testing.T) {
+	// filepath.Match don't work same between Windows and Linux
+	var isWindows = isWindows()
 	type args struct {
 		file    string
 		param   CopyParameters
@@ -352,8 +355,8 @@ func Test_fileToCopy(t *testing.T) {
 		{"exclude_test4", args{"dir1/test1.txt", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, false, false},
 		{"exclude_test5", args{"dir1/test2.txt", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, false, false},
 		{"exclude_test6", args{"dir1/test3.csv", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, true, false},
-		{"exclude_test7", args{"dir1/test1.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
-		{"exclude_test8", args{"dir1/test2.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test7", args{"dir1/test1.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, !isWindows, false},
+		{"exclude_test8", args{"dir1/test2.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, !isWindows, false},
 		{"exclude_test9", args{"dir1/test3.csv", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, true, false},
 		{"exclude_test10", args{"test1.txt", CopyParameters{ExcludePath: []string{"test1.txt"}, IncludePath: []string{}}, true}, false, false},
 		{"exclude_test11", args{"test2.txt", CopyParameters{ExcludePath: []string{"test1.txt"}, IncludePath: []string{}}, true}, true, false},
@@ -366,7 +369,7 @@ func Test_fileToCopy(t *testing.T) {
 		{"include_test2", args{"test2.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, true, false},
 		{"include_test3", args{"test3.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, false, false},
 		{"include_test4", args{"test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, false, false},
-		{"include_test5", args{"dir/test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, true, false},
+		{"include_test5", args{"dir/test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, isWindows, false},
 		{"include_test6", args{"dir/test2.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, false, false},
 		{"include_test7", args{"dir/test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, true, false},
 		{"include_test8", args{"dir/test2.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, false, false},
@@ -390,6 +393,8 @@ func Test_fileToCopy(t *testing.T) {
 }
 
 func Test_matchGlob(t *testing.T) {
+	// filepath.Match don't work same between Windows and Linux
+	var isWindows = isWindows()
 	type args struct {
 		file    string
 		pattern string
@@ -404,11 +409,13 @@ func Test_matchGlob(t *testing.T) {
 		{"test1", args{"test1.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
 		{"test2", args{"test2.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
 		{"test3", args{"test3.csv", "*.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
-		{"test4", args{"rep/test4.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
-		{"test5", args{"rep1/rep2/test5.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test4", args{"rep/test4.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, isWindows, false},
+		{"test5", args{"rep1/rep2/test5.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, isWindows, false},
 		{"test6", args{"rep1/rep2/test6.csv", "*.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
 		{"test7", args{"test1.txt", "test1.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
 		{"test8", args{"test2.txt", "test1.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
+		{"test9", args{"rep1/rep2/test1.txt", "*/*.txt", CopyParameters{GlobDoubleStar: false}}, isWindows, false},
+		{"test10", args{"rep1/rep2/test2.csv", "*/*.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
 
 		{"double_star_test1", args{"rep/test1.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
 		{"double_star_test2", args{"rep/test2.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
@@ -431,4 +438,8 @@ func Test_matchGlob(t *testing.T) {
 			}
 		})
 	}
+}
+
+func isWindows() bool {
+	return runtime.GOOS == "windows"
 }

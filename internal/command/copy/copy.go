@@ -47,6 +47,10 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	if !file.IsDir() {
 		return fmt.Errorf("Source " + file.Name() + " is not a directory!")
 	}
+	err = f.Close()
+	if err != nil {
+		return err
+	}
 
 	dest2 := filepath.Clean(dest)
 
@@ -124,6 +128,16 @@ func copyFile(srcFile, destFile string) error {
 	}
 	defer destination.Close()
 	_, err = io.Copy(destination, source)
+	err2 := destination.Close()
+	if err == nil && err2 == nil {
+		return nil
+	} else if err != nil && err2 != nil {
+		return fmt.Errorf("Error for copy from %v to %v: %v (error for close: %v)", srcFile, destFile, err, err2)
+	} else if err != nil && err2 == nil {
+		return fmt.Errorf("Error for copy from %v to %v: %v", srcFile, destFile, err)
+	} else if err == nil && err2 != nil {
+		return fmt.Errorf("Error for close %v: %v", destFile, err2)
+	}
 	return err
 }
 

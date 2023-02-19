@@ -127,6 +127,8 @@ func TestCopyDir(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			rootDir := t.TempDir()
 			createTestDirectory(t, rootDir)
+			t.Logf("exclude: %v", test.args.exclude)
+			t.Logf("include: %v", test.args.include)
 			param := CopyParameters{
 				PathSrc:        path.Join(rootDir, test.args.src),
 				PathDest:       path.Join(rootDir, test.args.dest),
@@ -330,4 +332,103 @@ func createTestDirectory(t *testing.T, rootDir string) bool {
 	}
 
 	return false
+}
+
+func Test_fileToCopy(t *testing.T) {
+	type args struct {
+		file    string
+		param   CopyParameters
+		exclude bool
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{"exclude_test1", args{"test1.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test2", args{"test2.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test3", args{"test1.csv", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, true, false},
+		{"exclude_test4", args{"dir1/test1.txt", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test5", args{"dir1/test2.txt", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test6", args{"dir1/test3.csv", CopyParameters{ExcludePath: []string{"*/*.txt"}, IncludePath: []string{}}, true}, true, false},
+		{"exclude_test7", args{"dir1/test1.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test8", args{"dir1/test2.txt", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test9", args{"dir1/test3.csv", CopyParameters{ExcludePath: []string{"*.txt"}, IncludePath: []string{}}, true}, true, false},
+		{"exclude_test10", args{"test1.txt", CopyParameters{ExcludePath: []string{"test1.txt"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test11", args{"test2.txt", CopyParameters{ExcludePath: []string{"test1.txt"}, IncludePath: []string{}}, true}, true, false},
+		{"exclude_test12", args{"test3.csv", CopyParameters{ExcludePath: []string{"test1.txt"}, IncludePath: []string{}}, true}, true, false},
+		{"exclude_test13", args{"test1.txt", CopyParameters{ExcludePath: []string{"*.txt", "*.csv"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test14", args{"test2.csv", CopyParameters{ExcludePath: []string{"*.txt", "*.csv"}, IncludePath: []string{}}, true}, false, false},
+		{"exclude_test15", args{"test4.log", CopyParameters{ExcludePath: []string{"*.txt", "*.csv"}, IncludePath: []string{}}, true}, true, false},
+
+		{"include_test1", args{"test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, true, false},
+		{"include_test2", args{"test2.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, true, false},
+		{"include_test3", args{"test3.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, false, false},
+		{"include_test4", args{"test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, false, false},
+		{"include_test5", args{"dir/test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, true, false},
+		{"include_test6", args{"dir/test2.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt"}}, false}, false, false},
+		{"include_test7", args{"dir/test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, true, false},
+		{"include_test8", args{"dir/test2.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*/*.txt"}}, false}, false, false},
+		{"include_test9", args{"test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{}}, false}, true, false},
+		{"include_test10", args{"test1.txt", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt", "*.csv"}}, false}, true, false},
+		{"include_test11", args{"test2.csv", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt", "*.csv"}}, false}, true, false},
+		{"include_test12", args{"test3.log", CopyParameters{ExcludePath: []string{}, IncludePath: []string{"*.txt", "*.csv"}}, false}, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fileToCopy(tt.args.file, tt.args.param, tt.args.exclude)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("fileToCopy() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("fileToCopy() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_matchGlob(t *testing.T) {
+	type args struct {
+		file    string
+		pattern string
+		param   CopyParameters
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    bool
+		wantErr bool
+	}{
+		{"test1", args{"test1.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test2", args{"test2.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test3", args{"test3.csv", "*.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
+		{"test4", args{"rep/test4.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test5", args{"rep1/rep2/test5.txt", "*.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test6", args{"rep1/rep2/test6.csv", "*.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
+		{"test7", args{"test1.txt", "test1.txt", CopyParameters{GlobDoubleStar: false}}, true, false},
+		{"test8", args{"test2.txt", "test1.txt", CopyParameters{GlobDoubleStar: false}}, false, false},
+
+		{"double_star_test1", args{"rep/test1.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test2", args{"rep/test2.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test3", args{"rep/test3.csv", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+		{"double_star_test4", args{"test1.txt", "*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test5", args{"test2.txt", "*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test6", args{"test3.csv", "*.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+		{"double_star_test7", args{"test1.txt", "test1.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test8", args{"test2.txt", "test1.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := matchGlob(tt.args.file, tt.args.pattern, tt.args.param)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("matchGlob() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("matchGlob() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -156,6 +156,10 @@ func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
 	if param.GlobDoubleStar {
 		return utils.MatchGlob(file, pattern)
 	} else {
+		// TODO to delete after fix
+		r, e := filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
+		fmt.Printf("matchGlob(%v, %v,%v)=%v (err=%v,f=%v)\n", file, pattern, param.GlobDoubleStar,
+			r, e, strings.ReplaceAll(file, "\\", "/"))
 		return filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
 	}
 }

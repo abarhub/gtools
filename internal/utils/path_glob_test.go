@@ -27,6 +27,11 @@ func TestMatchGlob(t *testing.T) {
 		{"test9", args{"dir1/test1.txt", "**/*.txt"}, true, false},
 		{"test10", args{"dir1/test1.txt", "**/*.doc"}, false, false},
 		{"test11", args{"dir1/test1.txt", "**/test*.txt"}, true, false},
+		{"test12", args{"dir1/test1.txt", "**/test1.txt"}, true, false},
+		{"test13", args{"dir1/test2.txt", "**/test1.txt"}, false, false},
+		{"test14", args{"dir1/dir2/dir3/test1.txt", "**/dir2/**/test1.txt"}, true, false},
+		{"test15", args{"dir1/dir5/dir3/test1.txt", "**/dir2/**/test1.txt"}, false, false},
+		{"test16", args{"dir1/dir5/dir3/test1.txt", "**/dir1/**/test1.txt"}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -53,7 +58,7 @@ func Test_convert(t *testing.T) {
 	}{
 		{"test1", args{"abc"}, "abc"},
 		{"test2", args{"abc.toto"}, "abc\\.toto"},
-		{"test3", args{"abc*toto"}, "abc[^\\/]*toto"},
+		{"test3", args{"abc*toto"}, "abc[^\\\\/]*toto"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -425,6 +425,12 @@ func Test_matchGlob(t *testing.T) {
 		{"double_star_test6", args{"test3.csv", "*.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
 		{"double_star_test7", args{"test1.txt", "test1.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
 		{"double_star_test8", args{"test2.txt", "test1.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+		{"double_star_test9", args{"test1.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test10", args{"rep/rep2/test1.txt", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test11", args{"rep/rep2/test2.csv", "**/*.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+		{"double_star_test12", args{"rep/rep2/rep3/test1.txt", "**/rep2/**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
+		{"double_star_test13", args{"rep/rep4/rep3/test1.txt", "**/rep2/**/*.txt", CopyParameters{GlobDoubleStar: true}}, false, false},
+		{"double_star_test14", args{"rep/rep2/rep3/test1.txt", "rep/**/*.txt", CopyParameters{GlobDoubleStar: true}}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

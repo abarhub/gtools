@@ -35,7 +35,7 @@ func ConfigureCopyCommandLine(rootCmd *cobra.Command) {
 	copyCmd.Flags().StringSliceVarP(&excludePath, "exclude", "e", []string{}, "Path to exclude")
 	copyCmd.Flags().StringSliceVarP(&includePath, "include", "i", []string{}, "Path to include")
 	copyCmd.Flags().BoolVarP(&createDestDir, "createDestDir", "c", false, "Create destination directory if not exists")
-	copyCmd.Flags().BoolVarP(&globDoubleStar, "doubleStar", "d", false, "Use global with double star for exclude and include")
+	copyCmd.Flags().BoolVarP(&globDoubleStar, "doubleStar", "d", true, "Use global with double star for exclude and include")
 	rootCmd.AddCommand(copyCmd)
 
 }

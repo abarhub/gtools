@@ -35,24 +35,19 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 		return fmt.Errorf("Cannot copy a folder into the folder itself!")
 	}
 
-	f, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-
-	file, err := f.Stat()
+	file, err := os.Stat(src)
 	if err != nil {
 		return err
 	}
 	if !file.IsDir() {
 		return fmt.Errorf("Source " + file.Name() + " is not a directory!")
 	}
-	err = f.Close()
-	if err != nil {
-		return err
-	}
 
 	dest2 := filepath.Clean(dest)
+
+	if dest2 == "." {
+		return fmt.Errorf("Destination " + dest + " is invalid !")
+	}
 
 	if param.CreateDestDir {
 		// create dest if not exists

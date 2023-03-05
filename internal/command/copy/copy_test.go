@@ -99,7 +99,13 @@ var defaultFiles = map[string][]byte{
 	"dir2/test02_4.log": {4, 5, 6},
 }
 
+var defaultFilesUnique = map[string][]byte{
+	"test1.txt": {1, 2, 3},
+}
+
 func TestCopyDir(t *testing.T) {
+	// TODO fix TU in gitub action
+	isWindowsOs := isWindows()
 	type args struct {
 		src            string
 		dest           string
@@ -115,18 +121,30 @@ func TestCopyDir(t *testing.T) {
 		wantErr bool
 	}{
 		{"test1", args{"src", "dest", []string{}, []string{}, false, false, defaultFiles}, false},
-		// TODO fix TU in gitub action
-		//{"test2", args{"src", "dest", []string{"*/test1.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt"})}, false},
-		//{"test3", args{"src", "dest", []string{"*/test1.txt", "*/test2.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt", "test2.txt"})}, false},
+		{"test2", args{"src", "dest", []string{"*/test1.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt"})}, false},
+		{"test3", args{"src", "dest", []string{"*/test1.txt", "*/test2.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt", "test2.txt"})}, false},
 		{"test4", args{"src", "dest2", []string{}, []string{}, false, false, defaultFiles}, true},
 		{"test5", args{"src", "dest2", []string{}, []string{}, false, true, defaultFiles}, false},
-		// TODO fix TU in gitub action
-		//{"test6", args{"src", "dest", []string{"*/*.log"}, []string{}, false, false, remove(defaultFiles, []string{"test5.log", "dir2/test02_4.log"})}, false},
-		//{"test7", args{"src", "dest", []string{}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
-		//{"test8", args{"src", "dest", []string{"*/dir1"}, []string{}, false, false, remove(defaultFiles, []string{"dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv"})}, false},
-		//{"test9", args{"src", "dest", []string{"*/dir1"}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test6", args{"src", "dest", []string{"*/*.log"}, []string{}, false, false, remove(defaultFiles, []string{"test5.log", "dir2/test02_4.log"})}, false},
+		{"test7", args{"src", "dest", []string{}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test8", args{"src", "dest", []string{"*/dir1"}, []string{}, false, false, remove(defaultFiles, []string{"dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv"})}, false},
+		{"test9", args{"src", "dest", []string{"*/dir1"}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test10", args{"src/test1.txt", "dest/test1.txt", []string{}, []string{}, false, false, defaultFilesUnique}, false},
+		{"test11", args{"src/test1.txt", "dest", []string{}, []string{}, false, false, defaultFilesUnique}, false},
 	}
 	for _, test := range tests {
+		if !isWindowsOs {
+			switch test.name {
+			case "test2":
+			case "test3":
+			case "test6":
+			case "test7":
+			case "test8":
+			case "test9":
+				t.Logf("ignore test: %v", test.name)
+				continue
+			}
+		}
 		t.Run(test.name, func(t *testing.T) {
 			rootDir := t.TempDir()
 			createTestDirectory(t, rootDir)
@@ -157,7 +175,13 @@ func checkFs(t *testing.T, dest map[string][]byte, rootDir string) {
 	for filename, content := range dest {
 		listeFileRef = append(listeFileRef, normalizePath(filename))
 		listeFileRef = addParent(listeFileRef, filename)
-		filePath := path.Join(rootDir, filename)
+		var filePath string
+		if path.Ext(rootDir) == ".txt" || path.Ext(rootDir) == ".csv" || path.Ext(rootDir) == ".log" {
+			// dest is a file
+			filePath = rootDir
+		} else {
+			filePath = path.Join(rootDir, filename)
+		}
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			t.Errorf("file %v not copied", filename)
 		} else if err != nil {

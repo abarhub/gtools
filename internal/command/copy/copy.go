@@ -39,8 +39,28 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	if err != nil {
 		return err
 	}
+
+	dest2 := filepath.Clean(dest)
+
+	if dest2 == "." {
+		return fmt.Errorf("Destination " + dest + " is invalid !")
+	}
+
 	if !file.IsDir() {
-		return fmt.Errorf("Source " + file.Name() + " is not a directory!")
+		err = copyFile2(src, dest2, param)
+		return err
+	} else {
+		err = copyDir2(src, dest, param)
+		return err
+	}
+
+}
+
+func copyDir2(src string, dest string, param CopyParameters) error {
+
+	_, err := os.Stat(src)
+	if err != nil {
+		return err
 	}
 
 	dest2 := filepath.Clean(dest)
@@ -72,7 +92,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 			return err
 		} else if toCopy {
 			if f.IsDir() {
-				err = copyDirectory(srcFile, destFile, param)
+				err = copyDir2(srcFile, destFile, param)
 				if err != nil {
 					return err
 				}
@@ -85,7 +105,8 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 					if err != nil {
 						return err
 					}
-					err = copyFile(srcFile, destFile)
+					errors := copyFile(srcFile, destFile)
+					err = convertErrorArryToError(errors)
 					if err != nil {
 						return err
 					}
@@ -95,6 +116,51 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	}
 
 	return nil
+}
+
+func convertErrorArryToError(errors []error) error {
+	if errors != nil && len(errors) > 0 {
+		s := ""
+		var e error
+		for _, e = range errors {
+			s = s + e.Error()
+		}
+		return fmt.Errorf(s)
+	} else {
+		return nil
+	}
+}
+
+func copyFile2(src, dest string, param CopyParameters) error {
+	f2, err := os.Stat(dest)
+	if err == nil { // dest exists
+		var srcFile, destFile string
+		if f2.IsDir() {
+			filename := path.Base(src)
+			srcFile = src
+			destFile = path.Join(dest, filename)
+		} else {
+			srcFile = src
+			destFile = dest
+		}
+		errors := copyFile(srcFile, destFile)
+		return convertErrorArryToError(errors)
+	} else if os.IsNotExist(err) { // dest not exists
+		if param.CreateDestDir {
+			parent := path.Dir(dest)
+			if _, err := os.Stat(parent); os.IsNotExist(err) {
+				err = os.Mkdir(parent, 0755)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		errors := copyFile(src, dest)
+		return convertErrorArryToError(errors)
+
+	} else {
+		return err
+	}
 }
 
 func createDirIfNeeded(file string) error {
@@ -110,30 +176,43 @@ func createDirIfNeeded(file string) error {
 	return nil
 }
 
-func copyFile(srcFile, destFile string) error {
+func copyFile(srcFile, destFile string) (errorResult []error) {
 	source, err := os.Open(srcFile)
 	if err != nil {
-		return err
+		return []error{err}
 	}
-	defer source.Close()
+	defer func() {
+		if tempErr := source.Close(); tempErr != nil {
+			errorResult = append(errorResult, tempErr)
+		}
+	}()
 
 	destination, err := os.Create(destFile)
 	if err != nil {
-		return err
+		return []error{err}
 	}
-	defer destination.Close()
+	//defer destination.Close()
+	defer func() {
+		if tempErr := destination.Close(); tempErr != nil {
+			errorResult = append(errorResult, tempErr)
+		}
+	}()
 	_, err = io.Copy(destination, source)
-	err2 := destination.Close()
-	if err == nil && err2 == nil {
+	//err2 := destination.Close()
+	//if err == nil && err2 == nil {
+	//	return nil
+	//} else if err != nil && err2 != nil {
+	//	return []error{fmt.Errorf("Error for copy from %v to %v: %v (error for close: %v)", srcFile, destFile, err, err2)}
+	//} else if err != nil && err2 == nil {
+	//	return []error{fmt.Errorf("Error for copy from %v to %v: %v", srcFile, destFile, err)}
+	//} else if err == nil && err2 != nil {
+	//	return fmt.Errorf("Error for close %v: %v", destFile, err2)
+	//}
+	if err != nil {
+		return []error{err}
+	} else {
 		return nil
-	} else if err != nil && err2 != nil {
-		return fmt.Errorf("Error for copy from %v to %v: %v (error for close: %v)", srcFile, destFile, err, err2)
-	} else if err != nil && err2 == nil {
-		return fmt.Errorf("Error for copy from %v to %v: %v", srcFile, destFile, err)
-	} else if err == nil && err2 != nil {
-		return fmt.Errorf("Error for close %v: %v", destFile, err2)
 	}
-	return err
 }
 
 func fileToCopy(file string, param CopyParameters, exclude bool) (bool, error) {

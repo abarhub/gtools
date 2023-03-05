@@ -1,6 +1,8 @@
 # gtools
 
-![example workflow](https://github.com/abarhub/gtools/actions/workflows/tests.yml/badge.svg)
+![last build](https://github.com/abarhub/gtools/actions/workflows/tests.yml/badge.svg)
+
+![Last release](https://img.shields.io/github/v/release/abarhub/gtools)
 
 
 Tools for files

@@ -142,7 +142,7 @@ func TestCopyDir(t *testing.T) {
 			case "test8":
 			case "test9":
 				t.Logf("ignore test: %v", test.name)
-				continue
+				t.Skipf("ignore test: %v", test.name)
 			}
 		}
 		t.Run(test.name, func(t *testing.T) {

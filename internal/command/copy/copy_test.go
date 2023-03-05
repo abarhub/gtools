@@ -135,12 +135,7 @@ func TestCopyDir(t *testing.T) {
 	for _, test := range tests {
 		if !isWindowsOs {
 			switch test.name {
-			case "test2":
-			case "test3":
-			case "test6":
-			case "test7":
-			case "test8":
-			case "test9":
+			case "test2", "test3", "test6", "test7", "test8", "test9":
 				t.Logf("ignore test: %v", test.name)
 				t.Skipf("ignore test: %v", test.name)
 			}

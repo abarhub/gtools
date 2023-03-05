@@ -10,6 +10,13 @@ to build executable
 go build ./cmd/gtools.go
 ```
 
+to build for linux
+```shell
+set GOOS=linux
+set GOARCH=amd64
+go build ./cmd/gtools.go
+```
+
 to run tests
 ```shell
 go test ./...

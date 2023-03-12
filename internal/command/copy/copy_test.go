@@ -563,3 +563,21 @@ func Test_matchGlob(t *testing.T) {
 func isWindows() bool {
 	return runtime.GOOS == "windows"
 }
+
+func Test1(t *testing.T) {
+
+	var file = "test1.txt"
+	rootDir := t.TempDir()
+	f := path.Join(rootDir, file)
+	t.Logf("create file=%v", f)
+	destination, err := os.Create(f)
+	if tempErr := destination.Close(); tempErr != nil {
+		t.Errorf("error for close file %v : %v", f, tempErr.Error())
+	}
+	if err != nil {
+		t.Errorf("error for create file %v, err = %v", file, err)
+	} else {
+		t.Logf("create file ok (%v)", destination)
+	}
+
+}

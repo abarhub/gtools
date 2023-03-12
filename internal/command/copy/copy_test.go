@@ -136,8 +136,8 @@ func TestCopyDirIncludeExclude(t *testing.T) {
 		if !isWindowsOs {
 			switch test.name {
 			case "test2", "test3", "test6", "test7", "test8", "test9":
-				t.Logf("ignore test: %v", test.name)
-				t.Skipf("ignore test: %v", test.name)
+				//t.Logf("ignore test: %v", test.name)
+				//t.Skipf("ignore test: %v", test.name)
 			}
 		}
 		t.Run(test.name, func(t *testing.T) {
@@ -172,7 +172,6 @@ var defaultFilesDryRun1 = map[string][]byte{
 var defaultFilesDryRunRes = add(defaultFiles, defaultFilesDryRun1)
 
 func TestCopyDirDryRun(t *testing.T) {
-	isWindowsOs := isWindows()
 	type args struct {
 		dryRun           bool
 		verbose          bool
@@ -193,13 +192,6 @@ func TestCopyDirDryRun(t *testing.T) {
 		{"test6", args{false, true, NoCopyFileExisteSizeFile, defaultFiles, defaultFilesDryRun1}, false},
 	}
 	for _, test := range tests {
-		if !isWindowsOs {
-			switch test.name {
-			case "test4", "test5", "test6":
-				//t.Logf("ignore test: %v", test.name)
-				//t.Skipf("ignore test: %v", test.name)
-			}
-		}
 		t.Run(test.name, func(t *testing.T) {
 			rootDir := t.TempDir()
 			createTestDirectory(t, rootDir)

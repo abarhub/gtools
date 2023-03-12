@@ -17,6 +17,8 @@ type CopyParameters struct {
 	IncludePath    []string
 	CreateDestDir  bool
 	GlobDoubleStar bool
+	Verbose        bool
+	DryRun         bool
 }
 
 /*
@@ -69,7 +71,7 @@ func copyDir2(src string, dest string, param CopyParameters) error {
 		return fmt.Errorf("Destination " + dest + " is invalid !")
 	}
 
-	if param.CreateDestDir {
+	if param.CreateDestDir && !param.DryRun {
 		// create dest if not exists
 		if _, err := os.Stat(dest2); os.IsNotExist(err) {
 			err = os.Mkdir(dest2, 0755)
@@ -101,11 +103,13 @@ func copyDir2(src string, dest string, param CopyParameters) error {
 				if err != nil {
 					return err
 				} else if toCopy {
-					err = createDirIfNeeded(destFile)
-					if err != nil {
-						return err
+					if !param.DryRun {
+						err = createDirIfNeeded(destFile)
+						if err != nil {
+							return err
+						}
 					}
-					errors := copyFile(srcFile, destFile)
+					errors := copyFile(srcFile, destFile, param)
 					err = convertErrorArryToError(errors)
 					if err != nil {
 						return err
@@ -143,7 +147,7 @@ func copyFile2(src, dest string, param CopyParameters) error {
 			srcFile = src
 			destFile = dest
 		}
-		errors := copyFile(srcFile, destFile)
+		errors := copyFile(srcFile, destFile, param)
 		return convertErrorArryToError(errors)
 	} else if os.IsNotExist(err) { // dest not exists
 		if param.CreateDestDir {
@@ -155,7 +159,7 @@ func copyFile2(src, dest string, param CopyParameters) error {
 				}
 			}
 		}
-		errors := copyFile(src, dest)
+		errors := copyFile(src, dest, param)
 		return convertErrorArryToError(errors)
 
 	} else {
@@ -176,42 +180,39 @@ func createDirIfNeeded(file string) error {
 	return nil
 }
 
-func copyFile(srcFile, destFile string) (errorResult []error) {
-	source, err := os.Open(srcFile)
-	if err != nil {
-		return []error{err}
-	}
-	defer func() {
-		if tempErr := source.Close(); tempErr != nil {
-			errorResult = append(errorResult, tempErr)
-		}
-	}()
-
-	destination, err := os.Create(destFile)
-	if err != nil {
-		return []error{err}
-	}
-	//defer destination.Close()
-	defer func() {
-		if tempErr := destination.Close(); tempErr != nil {
-			errorResult = append(errorResult, tempErr)
-		}
-	}()
-	_, err = io.Copy(destination, source)
-	//err2 := destination.Close()
-	//if err == nil && err2 == nil {
-	//	return nil
-	//} else if err != nil && err2 != nil {
-	//	return []error{fmt.Errorf("Error for copy from %v to %v: %v (error for close: %v)", srcFile, destFile, err, err2)}
-	//} else if err != nil && err2 == nil {
-	//	return []error{fmt.Errorf("Error for copy from %v to %v: %v", srcFile, destFile, err)}
-	//} else if err == nil && err2 != nil {
-	//	return fmt.Errorf("Error for close %v: %v", destFile, err2)
-	//}
-	if err != nil {
-		return []error{err}
-	} else {
+func copyFile(srcFile, destFile string, param CopyParameters) (errorResult []error) {
+	if param.DryRun {
+		fmt.Printf("%v -> %v\n", srcFile, destFile)
 		return nil
+	} else {
+		source, err := os.Open(srcFile)
+		if err != nil {
+			return []error{err}
+		}
+		defer func() {
+			if tempErr := source.Close(); tempErr != nil {
+				errorResult = append(errorResult, tempErr)
+			}
+		}()
+
+		destination, err := os.Create(destFile)
+		if err != nil {
+			return []error{err}
+		}
+		defer func() {
+			if tempErr := destination.Close(); tempErr != nil {
+				errorResult = append(errorResult, tempErr)
+			}
+		}()
+		if param.Verbose {
+			fmt.Printf("%v -> %v\n", srcFile, destFile)
+		}
+		_, err = io.Copy(destination, source)
+		if err != nil {
+			return []error{err}
+		} else {
+			return nil
+		}
 	}
 }
 
@@ -244,10 +245,6 @@ func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
 	if param.GlobDoubleStar {
 		return utils.MatchGlob(file, pattern)
 	} else {
-		// TODO to delete after fix
-		r, e := filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
-		fmt.Printf("matchGlob(%v, %v,%v)=%v (err=%v,f=%v)\n", file, pattern, param.GlobDoubleStar,
-			r, e, strings.ReplaceAll(file, "\\", "/"))
 		return filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
 	}
 }

@@ -10,6 +10,8 @@ var (
 	includePath    []string
 	createDestDir  bool
 	globDoubleStar bool
+	verbose        bool
+	dryRun         bool
 )
 
 var copyCmd = &cobra.Command{
@@ -19,7 +21,7 @@ var copyCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		param := copy2.CopyParameters{args[0], args[1],
 			excludePath, includePath, createDestDir,
-			globDoubleStar}
+			globDoubleStar, verbose, dryRun}
 		commandError = cmdCopy(param)
 		return nil
 	},
@@ -36,6 +38,8 @@ func ConfigureCopyCommandLine(rootCmd *cobra.Command) {
 	copyCmd.Flags().StringSliceVarP(&includePath, "include", "i", []string{}, "Path to include")
 	copyCmd.Flags().BoolVarP(&createDestDir, "createDestDir", "c", false, "Create destination directory if not exists")
 	copyCmd.Flags().BoolVarP(&globDoubleStar, "doubleStar", "d", true, "Use global with double star for exclude and include")
+	copyCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Show file copied")
+	copyCmd.Flags().BoolVarP(&dryRun, "dryRun", "r", false, "Don't copy")
 	rootCmd.AddCommand(copyCmd)
 
 }

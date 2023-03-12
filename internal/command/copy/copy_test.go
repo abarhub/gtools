@@ -197,8 +197,8 @@ func TestCopyDirDryRun(t *testing.T) {
 		if !isWindowsOs {
 			switch test.name {
 			case "test4", "test5", "test6":
-				t.Logf("ignore test: %v", test.name)
-				t.Skipf("ignore test: %v", test.name)
+				//t.Logf("ignore test: %v", test.name)
+				//t.Skipf("ignore test: %v", test.name)
 			}
 		}
 		t.Run(test.name, func(t *testing.T) {
@@ -294,7 +294,7 @@ func addFs(t *testing.T, dest map[string][]byte, rootDir string) {
 		} else {
 			filePath = path.Join(rootDir, filename)
 		}
-		err := os.WriteFile(filePath, content, 666)
+		err := os.WriteFile(filePath, content, 0755)
 		if err != nil {
 			t.Errorf("error for create file %v : %v", filename, err)
 		}

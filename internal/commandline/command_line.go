@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const VersionGTools = "1.0.0"
+const VersionGTools = "1.1.0"
 
 var commandError error = nil
 

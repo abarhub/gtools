@@ -14,7 +14,7 @@ type DuParameters struct {
 	MaxDepth      int
 }
 
-func diskUsage(currPath string, info os.FileInfo, depth int, maxDepth int, humanReadable bool, threshold int64) int64 {
+func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64) int64 {
 	var size int64
 
 	dir, err := os.Open(currPath)
@@ -32,7 +32,7 @@ func diskUsage(currPath string, info os.FileInfo, depth int, maxDepth int, human
 
 	for _, file := range files {
 		if file.IsDir() {
-			size += diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), file, depth+1, maxDepth, humanReadable, threshold)
+			size += diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), depth+1, maxDepth, humanReadable, threshold)
 		} else {
 			size += file.Size()
 		}
@@ -107,12 +107,12 @@ func DiskUsage(param DuParameters) error {
 		dir = path
 	}
 
-	info, err := os.Lstat(dir)
+	_, err := os.Lstat(dir)
 	if err != nil {
 		return err
 	}
 
-	diskUsage(dir, info, 0, maxDepth, humanReadable, threshold)
+	diskUsage(dir, 0, maxDepth, humanReadable, threshold)
 
 	return nil
 }

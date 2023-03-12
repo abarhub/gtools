@@ -103,7 +103,7 @@ var defaultFilesUnique = map[string][]byte{
 	"test1.txt": {1, 2, 3},
 }
 
-func TestCopyDir(t *testing.T) {
+func TestCopyDirIncludeExclude(t *testing.T) {
 	// TODO fix TU in gitub action
 	isWindowsOs := isWindows()
 	type args struct {
@@ -165,6 +165,67 @@ func TestCopyDir(t *testing.T) {
 	}
 }
 
+var defaultFilesDryRun1 = map[string][]byte{
+	"test1.txt": {1, 2, 3, 4},
+}
+
+var defaultFilesDryRunRes = add(defaultFiles, defaultFilesDryRun1)
+
+func TestCopyDirDryRun(t *testing.T) {
+	isWindowsOs := isWindows()
+	type args struct {
+		dryRun           bool
+		verbose          bool
+		copyIfFileExists FileExists
+		dirDest          map[string][]byte
+		updateDest       map[string][]byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"test1", args{false, false, CopyFileExists, defaultFiles, map[string][]byte{}}, false},
+		{"test2", args{false, true, CopyFileExists, defaultFiles, map[string][]byte{}}, false},
+		{"test3", args{true, false, CopyFileExists, map[string][]byte{}, map[string][]byte{}}, false},
+		{"test4", args{false, true, CopyFileExists, defaultFiles, defaultFilesDryRun1}, false},
+		{"test5", args{false, true, NoCopyFileExists, defaultFilesDryRunRes, defaultFilesDryRun1}, false},
+		{"test6", args{false, true, NoCopyFileExisteSizeFile, defaultFiles, defaultFilesDryRun1}, false},
+	}
+	for _, test := range tests {
+		if !isWindowsOs {
+			//switch test.name {
+			//case "test2", "test3", "test6", "test7", "test8", "test9":
+			//	t.Logf("ignore test: %v", test.name)
+			//	t.Skipf("ignore test: %v", test.name)
+			//}
+		}
+		t.Run(test.name, func(t *testing.T) {
+			rootDir := t.TempDir()
+			createTestDirectory(t, rootDir)
+			addFs(t, test.args.updateDest, path.Join(rootDir, "dest"))
+			t.Logf("dryRun: %v", test.args.dryRun)
+			t.Logf("verbose: %v", test.args.verbose)
+			t.Logf("copyIfFileExists: %v", test.args.copyIfFileExists)
+			param := CopyParameters{
+				PathSrc:          path.Join(rootDir, "src"),
+				PathDest:         path.Join(rootDir, "dest"),
+				DryRun:           test.args.dryRun,
+				Verbose:          test.args.verbose,
+				CopyIfFileExists: test.args.copyIfFileExists,
+			}
+			err := CopyDir(param)
+			if (err != nil) != test.wantErr {
+				t.Errorf("CopyDir() error = %v, wantErr %v", err, test.wantErr)
+			} else if err != nil {
+				//  pass next test
+			} else {
+				checkFs(t, test.args.dirDest, path.Join(rootDir, "dest"))
+			}
+		})
+	}
+}
+
 func checkFs(t *testing.T, dest map[string][]byte, rootDir string) {
 	listeFileRef := []string{}
 	for filename, content := range dest {
@@ -220,6 +281,26 @@ func checkFs(t *testing.T, dest map[string][]byte, rootDir string) {
 
 }
 
+func addFs(t *testing.T, dest map[string][]byte, rootDir string) {
+	listeFileRef := []string{}
+	for filename, content := range dest {
+		listeFileRef = append(listeFileRef, normalizePath(filename))
+		listeFileRef = addParent(listeFileRef, filename)
+		var filePath string
+		if path.Ext(rootDir) == ".txt" || path.Ext(rootDir) == ".csv" || path.Ext(rootDir) == ".log" {
+			// dest is a file
+			filePath = rootDir
+		} else {
+			filePath = path.Join(rootDir, filename)
+		}
+		err := os.WriteFile(filePath, content, 666)
+		if err != nil {
+			t.Errorf("error for create file %v : %v", filename, err)
+		}
+	}
+	t.Logf("list files: %v", listeFileRef)
+}
+
 func addParent(listPath []string, filename string) []string {
 	filename = normalizePath(filename)
 	s := filename
@@ -260,6 +341,17 @@ func remove(fileList map[string][]byte, filesToRemove []string) map[string][]byt
 		if !contains(filesToRemove, filename) {
 			fileListModified[filename] = content
 		}
+	}
+	return fileListModified
+}
+
+func add(fileList map[string][]byte, filesToAdd map[string][]byte) map[string][]byte {
+	fileListModified := make(map[string][]byte)
+	for filename, content := range fileList {
+		fileListModified[filename] = content
+	}
+	for filename, content := range filesToAdd {
+		fileListModified[filename] = content
 	}
 	return fileListModified
 }

@@ -10,15 +10,24 @@ import (
 	"strings"
 )
 
+type FileExists int
+
+const (
+	CopyFileExists FileExists = iota
+	NoCopyFileExists
+	NoCopyFileExisteSizeFile
+)
+
 type CopyParameters struct {
-	PathSrc        string
-	PathDest       string
-	ExcludePath    []string
-	IncludePath    []string
-	CreateDestDir  bool
-	GlobDoubleStar bool
-	Verbose        bool
-	DryRun         bool
+	PathSrc          string
+	PathDest         string
+	ExcludePath      []string
+	IncludePath      []string
+	CreateDestDir    bool
+	GlobDoubleStar   bool
+	Verbose          bool
+	DryRun           bool
+	CopyIfFileExists FileExists
 }
 
 /*
@@ -181,38 +190,72 @@ func createDirIfNeeded(file string) error {
 }
 
 func copyFile(srcFile, destFile string, param CopyParameters) (errorResult []error) {
-	if param.DryRun {
-		fmt.Printf("%v -> %v\n", srcFile, destFile)
-		return nil
-	} else {
-		source, err := os.Open(srcFile)
-		if err != nil {
-			return []error{err}
-		}
-		defer func() {
-			if tempErr := source.Close(); tempErr != nil {
-				errorResult = append(errorResult, tempErr)
-			}
-		}()
-
-		destination, err := os.Create(destFile)
-		if err != nil {
-			return []error{err}
-		}
-		defer func() {
-			if tempErr := destination.Close(); tempErr != nil {
-				errorResult = append(errorResult, tempErr)
-			}
-		}()
-		if param.Verbose {
+	ok, err := copyFileToDest(destFile, param, srcFile)
+	if err != nil {
+		return []error{err}
+	} else if ok { // copy of file
+		if param.DryRun {
 			fmt.Printf("%v -> %v\n", srcFile, destFile)
-		}
-		_, err = io.Copy(destination, source)
-		if err != nil {
-			return []error{err}
-		} else {
 			return nil
+		} else {
+			source, err := os.Open(srcFile)
+			if err != nil {
+				return []error{err}
+			}
+			defer func() {
+				if tempErr := source.Close(); tempErr != nil {
+					errorResult = append(errorResult, tempErr)
+				}
+			}()
+
+			destination, err := os.Create(destFile)
+			if err != nil {
+				return []error{err}
+			}
+			defer func() {
+				if tempErr := destination.Close(); tempErr != nil {
+					errorResult = append(errorResult, tempErr)
+				}
+			}()
+			if param.Verbose {
+				fmt.Printf("%v -> %v\n", srcFile, destFile)
+			}
+			_, err = io.Copy(destination, source)
+			if err != nil {
+				return []error{err}
+			} else {
+				return nil
+			}
 		}
+	} else { // no copy
+		return nil
+	}
+}
+
+func copyFileToDest(file string, param CopyParameters, srcFile string) (bool, error) {
+	switch param.CopyIfFileExists {
+	case CopyFileExists:
+		return true, nil
+	case NoCopyFileExists:
+		_, err := os.Stat(file)
+		if !os.IsNotExist(err) { // file exists => no copy
+			return false, nil
+		} else { // file not exists => copy
+			return true, nil
+		}
+	case NoCopyFileExisteSizeFile:
+		fDest, err := os.Stat(file)
+		if !os.IsNotExist(err) { // file exists => check size
+			fSrc, err2 := os.Stat(srcFile)
+			if err2 != nil {
+				return false, err2
+			}
+			return fDest.Size() != fSrc.Size(), nil
+		} else { // file not exists => copy
+			return true, nil
+		}
+	default:
+		return false, fmt.Errorf("Invalide param copy if exists : %v !", param.CopyIfFileExists)
 	}
 }
 

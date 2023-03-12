@@ -192,7 +192,7 @@ func createDirIfNeeded(file string) error {
 func copyFile(srcFile, destFile string, param CopyParameters) (errorResult []error) {
 	ok, err := copyFileToDest(destFile, param, srcFile)
 	if err != nil {
-		return []error{err}
+		return []error{fmt.Errorf("error for check if dest must be create file %v : %v", destFile, err.Error())}
 	} else if ok { // copy of file
 		if param.DryRun {
 			fmt.Printf("%v -> %v\n", srcFile, destFile)
@@ -240,21 +240,25 @@ func copyFileToDest(file string, param CopyParameters, srcFile string) (bool, er
 		return true, nil
 	case NoCopyFileExists:
 		_, err := os.Stat(file)
-		if !os.IsNotExist(err) { // file exists => no copy
-			return false, nil
-		} else { // file not exists => copy
+		if os.IsNotExist(err) {
+			// file not exists => copy
 			return true, nil
+		} else {
+			// file exists => no copy
+			return false, nil
 		}
 	case NoCopyFileExisteSizeFile:
 		fDest, err := os.Stat(file)
-		if !os.IsNotExist(err) { // file exists => check size
+		if os.IsNotExist(err) {
+			// file not exists => copy
+			return true, nil
+		} else {
+			// file exists => check size
 			fSrc, err2 := os.Stat(srcFile)
 			if err2 != nil {
 				return false, err2
 			}
 			return fDest.Size() != fSrc.Size(), nil
-		} else { // file not exists => copy
-			return true, nil
 		}
 	default:
 		return false, fmt.Errorf("Invalide param copy if exists : %v !", param.CopyIfFileExists)

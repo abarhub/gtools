@@ -77,7 +77,7 @@ func copyDir2(src string, dest string, param CopyParameters) error {
 	dest2 := filepath.Clean(dest)
 
 	if dest2 == "." {
-		return fmt.Errorf("Destination " + dest + " is invalid !")
+		return fmt.Errorf("Destination %v is invalid !", dest)
 	}
 
 	if param.CreateDestDir && !param.DryRun {
@@ -200,20 +200,22 @@ func copyFile(srcFile, destFile string, param CopyParameters) (errorResult []err
 		} else {
 			source, err := os.Open(srcFile)
 			if err != nil {
-				return []error{err}
+				return []error{fmt.Errorf("error for open src file %v : %v", srcFile, err.Error())}
 			}
 			defer func() {
 				if tempErr := source.Close(); tempErr != nil {
+					tempErr = fmt.Errorf("error for close source file %v : %v", srcFile, tempErr.Error())
 					errorResult = append(errorResult, tempErr)
 				}
 			}()
 
 			destination, err := os.Create(destFile)
 			if err != nil {
-				return []error{err}
+				return []error{fmt.Errorf("error for create dest file %v : %v", destFile, err.Error())}
 			}
 			defer func() {
 				if tempErr := destination.Close(); tempErr != nil {
+					tempErr = fmt.Errorf("error for close dest file %v : %v", destFile, tempErr.Error())
 					errorResult = append(errorResult, tempErr)
 				}
 			}()
@@ -222,7 +224,7 @@ func copyFile(srcFile, destFile string, param CopyParameters) (errorResult []err
 			}
 			_, err = io.Copy(destination, source)
 			if err != nil {
-				return []error{err}
+				return []error{fmt.Errorf("error for copy from %v to %v: %v", srcFile, destFile, err.Error())}
 			} else {
 				return nil
 			}

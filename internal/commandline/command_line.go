@@ -28,6 +28,7 @@ func Run() error {
 	ConfigureCopyCommandLine(rootCmd)
 	ConfigureDuCommandLine(rootCmd)
 	ConfigureBase64CommandLine(rootCmd)
+	ConfigureLsCommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		return EmptyError

@@ -30,6 +30,9 @@ func MvCommand(param MvParameters) error {
 	}
 	dest := ""
 	if info.IsDir() { // source is directory
+		if param.CopyAndDelete {
+			return fmt.Errorf("copy and delete not implemented for directory source")
+		}
 		dest = param.PathDest
 	} else { // source is file
 		info, err = os.Stat(param.PathDest)
@@ -115,7 +118,7 @@ func MoveFile(source, destination string, param MvParameters) (result []error) {
 	_, err = io.Copy(dst, src)
 	if err != nil {
 		res := []error{err}
-		res2 := os.RemoveAll(destination)
+		res2 := os.Remove(destination)
 		if res2 != nil {
 			res = append(res, res2)
 		}

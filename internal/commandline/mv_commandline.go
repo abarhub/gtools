@@ -39,7 +39,7 @@ func cmdMv(param mv.MvParameters) error {
 func ConfigureMvCommandLine(rootCmd *cobra.Command) {
 
 	mvCmd.Flags().BoolVarP(&copyAndDelete, "copyAndDelete", "c", false,
-		"Copy to destination and delete source")
+		"Copy to destination and delete source (only for file move)")
 	mvCmd.Flags().BoolVarP(&verboseMv, "verbose", "v", false,
 		"Verbose")
 	rootCmd.AddCommand(mvCmd)

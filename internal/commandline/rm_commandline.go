@@ -6,8 +6,9 @@ import (
 )
 
 var (
-//longFormat bool
-//recursive  bool
+	confirmationRm bool
+	recursiveRm    bool
+	verboseRm      bool
 )
 
 var rmCmd = &cobra.Command{
@@ -20,7 +21,7 @@ var rmCmd = &cobra.Command{
 		if len(args) > 0 {
 			path = args[0]
 		}
-		param := rm.RmParameters{path, longFormat, recursive}
+		param := rm.RmParameters{path, confirmationRm, recursiveRm, verboseRm}
 		commandError = cmdRm(param)
 		return nil
 	},
@@ -33,10 +34,12 @@ func cmdRm(param rm.RmParameters) error {
 
 func ConfigureRmCommandLine(rootCmd *cobra.Command) {
 
-	//rmCmd.Flags().BoolVarP(&longFormat, "", "l", false,
-	//	"Long listing format")
-	//rmCmd.Flags().BoolVarP(&recursive, "recursive", "r", false,
-	//	"List subdirectory recursively")
+	rmCmd.Flags().BoolVarP(&confirmationRm, "confirmation", "c", true,
+		"Confirmation")
+	rmCmd.Flags().BoolVarP(&recursiveRm, "recursive", "r", false,
+		"Remove subdirectory recursively")
+	rmCmd.Flags().BoolVarP(&verboseRm, "verbose", "v", false,
+		"Verbose")
 	rootCmd.AddCommand(rmCmd)
 
 }

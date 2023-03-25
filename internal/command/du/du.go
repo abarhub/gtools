@@ -52,7 +52,7 @@ func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, thr
 	}
 
 	if (maxDepth) <= 0 || (maxDepth) >= depth {
-		if threshold == 0 || size >= threshold {
+		if threshold <= 0 || size >= threshold {
 			err := prettyPrintSize(size, humanReadable, out)
 			if err != nil {
 				return 0, err
@@ -136,11 +136,6 @@ func DiskUsageWriter(param DuParameters, out io.Writer) error {
 	var dir string
 
 	if path == "" {
-		//var err error
-		//dir, err = os.Getwd()
-		//if err != nil {
-		//	return err
-		//}
 		dir = "."
 	} else {
 		dir = path

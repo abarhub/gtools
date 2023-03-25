@@ -32,7 +32,7 @@ var result = map[string]string{
 }
 
 var result2 = map[string]string{
-	"./dir1/": "9",
+	"dir1/": "9",
 }
 
 func TestDiskUsage(t *testing.T) {
@@ -67,13 +67,14 @@ func TestDiskUsage(t *testing.T) {
 					if (err != nil) != tt.wantErr {
 						t.Errorf("DiskUsage() error = %v, wantErr %v", err, tt.wantErr)
 					} else {
+						resultWanted := tt.args.result
 						map0, err := splitString(output.String())
 						if err != nil {
 							t.Errorf("DiskUsage() error for split output : %v", err)
-						} else if !reflect.DeepEqual(result, map0) {
-							t.Errorf("error for result : %v != %v", result, map0)
+						} else if !reflect.DeepEqual(resultWanted, map0) {
+							t.Errorf("error for result : %v != %v", resultWanted, map0)
 						} else {
-							t.Logf("ok for %v and %v", result, map0)
+							t.Logf("ok for %v and %v", resultWanted, map0)
 						}
 					}
 				}

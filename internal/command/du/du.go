@@ -2,6 +2,7 @@ package du
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,25 +15,37 @@ type DuParameters struct {
 	MaxDepth      int
 }
 
-func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64) int64 {
+func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64, out io.Writer) (sizeResult int64, errResult error) {
 	var size int64
 
 	dir, err := os.Open(currPath)
 	if err != nil {
 		fmt.Println(err)
-		return size
+		return size, nil
 	}
-	defer dir.Close()
+	defer func() {
+		if tempErr := dir.Close(); tempErr != nil {
+			tempErr = fmt.Errorf("error for close %v : %v", currPath, tempErr.Error())
+			if errResult == nil {
+				errResult = tempErr
+			} else {
+				errResult = fmt.Errorf("%v. %v", errResult, tempErr.Error())
+			}
+		}
+	}()
 
 	files, err := dir.Readdir(-1)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return 0, err
 	}
 
 	for _, file := range files {
 		if file.IsDir() {
-			size += diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), depth+1, maxDepth, humanReadable, threshold)
+			sizeDir, err := diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), depth+1, maxDepth, humanReadable, threshold, out)
+			if err != nil {
+				return 0, err
+			}
+			size += sizeDir
 		} else {
 			size += file.Size()
 		}
@@ -40,33 +53,58 @@ func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, thr
 
 	if (maxDepth) <= 0 || (maxDepth) >= depth {
 		if threshold == 0 || size >= threshold {
-			prettyPrintSize(size, humanReadable)
-			fmt.Printf("\t %s%c\n", currPath, filepath.Separator)
+			err := prettyPrintSize(size, humanReadable, out)
+			if err != nil {
+				return 0, err
+			}
+			_, err = fmt.Fprintf(out, "\t %s%c\n", currPath, filepath.Separator)
+			if err != nil {
+				return 0, err
+			}
 		}
 	}
 
-	return size
+	return size, nil
 }
 
-func prettyPrintSize(size int64, humanReadable bool) {
+func prettyPrintSize(size int64, humanReadable bool, out io.Writer) error {
 	if humanReadable {
 		switch {
 		case size > 1024*1024*1024:
-			fmt.Printf("%.1fG", float64(size)/(1024*1024*1024))
+			_, err := fmt.Fprintf(out, "%.1fG", float64(size)/(1024*1024*1024))
+			if err != nil {
+				return err
+			}
 		case size > 1024*1024:
-			fmt.Printf("%.1fM", float64(size)/(1024*1024))
+			_, err := fmt.Fprintf(out, "%.1fM", float64(size)/(1024*1024))
+			if err != nil {
+				return err
+			}
 		case size > 1024:
-			fmt.Printf("%.1fK", float64(size)/1024)
+			_, err := fmt.Fprintf(out, "%.1fK", float64(size)/1024)
+			if err != nil {
+				return err
+			}
 		default:
-			fmt.Printf("%d", size)
+			_, err := fmt.Fprintf(out, "%d", size)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
-		fmt.Printf("%d", size)
+		_, err := fmt.Fprintf(out, "%d", size)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func DiskUsage(param DuParameters) error {
+	return DiskUsageWriter(param, os.Stdout)
+}
 
+func DiskUsageWriter(param DuParameters, out io.Writer) error {
 	var threshold int64
 
 	var path = param.Path
@@ -98,21 +136,22 @@ func DiskUsage(param DuParameters) error {
 	var dir string
 
 	if path == "" {
-		var err error
-		dir, err = os.Getwd()
+		//var err error
+		//dir, err = os.Getwd()
+		//if err != nil {
+		//	return err
+		//}
+		dir = "."
+	} else {
+		dir = path
+
+		_, err := os.Lstat(dir)
 		if err != nil {
 			return err
 		}
-	} else {
-		dir = path
 	}
 
-	_, err := os.Lstat(dir)
-	if err != nil {
-		return err
-	}
+	_, err := diskUsage(dir, 0, maxDepth, humanReadable, threshold, out)
 
-	diskUsage(dir, 0, maxDepth, humanReadable, threshold)
-
-	return nil
+	return err
 }

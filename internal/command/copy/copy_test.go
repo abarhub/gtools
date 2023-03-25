@@ -1,13 +1,10 @@
 package copy
 
 import (
-	"bytes"
-	"fmt"
+	testutils "gtools/internal/testutils"
 	"os"
 	"path"
-	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 )
 
@@ -121,14 +118,14 @@ func TestCopyDirIncludeExclude(t *testing.T) {
 		wantErr bool
 	}{
 		{"test1", args{"src", "dest", []string{}, []string{}, false, false, defaultFiles}, false},
-		{"test2", args{"src", "dest", []string{"*/test1.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt"})}, false},
-		{"test3", args{"src", "dest", []string{"*/test1.txt", "*/test2.txt"}, []string{}, false, false, remove(defaultFiles, []string{"test1.txt", "test2.txt"})}, false},
+		{"test2", args{"src", "dest", []string{"*/test1.txt"}, []string{}, false, false, testutils.Remove(defaultFiles, []string{"test1.txt"})}, false},
+		{"test3", args{"src", "dest", []string{"*/test1.txt", "*/test2.txt"}, []string{}, false, false, testutils.Remove(defaultFiles, []string{"test1.txt", "test2.txt"})}, false},
 		{"test4", args{"src", "dest2", []string{}, []string{}, false, false, defaultFiles}, true},
 		{"test5", args{"src", "dest2", []string{}, []string{}, false, true, defaultFiles}, false},
-		{"test6", args{"src", "dest", []string{"*/*.log"}, []string{}, false, false, remove(defaultFiles, []string{"test5.log", "dir2/test02_4.log"})}, false},
-		{"test7", args{"src", "dest", []string{}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
-		{"test8", args{"src", "dest", []string{"*/dir1"}, []string{}, false, false, remove(defaultFiles, []string{"dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv"})}, false},
-		{"test9", args{"src", "dest", []string{"*/dir1"}, []string{"*/*.txt"}, false, false, remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test6", args{"src", "dest", []string{"*/*.log"}, []string{}, false, false, testutils.Remove(defaultFiles, []string{"test5.log", "dir2/test02_4.log"})}, false},
+		{"test7", args{"src", "dest", []string{}, []string{"*/*.txt"}, false, false, testutils.Remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
+		{"test8", args{"src", "dest", []string{"*/dir1"}, []string{}, false, false, testutils.Remove(defaultFiles, []string{"dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv"})}, false},
+		{"test9", args{"src", "dest", []string{"*/dir1"}, []string{"*/*.txt"}, false, false, testutils.Remove(defaultFiles, []string{"test3.csv", "test4.csv", "test5.log", "dir1/test01.txt", "dir1/test02.txt", "dir1/test03.csv", "dir2/test02_2.csv", "dir2/test02_4.log"})}, false},
 		{"test10", args{"src/test1.txt", "dest/test1.txt", []string{}, []string{}, false, false, defaultFilesUnique}, false},
 		{"test11", args{"src/test1.txt", "dest", []string{}, []string{}, false, false, defaultFilesUnique}, false},
 	}
@@ -159,7 +156,7 @@ func TestCopyDirIncludeExclude(t *testing.T) {
 			} else if err != nil {
 				//  pass next test
 			} else {
-				checkFs(t, test.args.dirDest, path.Join(rootDir, test.args.dest))
+				testutils.CheckFs(t, test.args.dirDest, path.Join(rootDir, test.args.dest))
 			}
 		})
 	}
@@ -169,7 +166,7 @@ var defaultFilesDryRun1 = map[string][]byte{
 	"test1.txt": {1, 2, 3, 4},
 }
 
-var defaultFilesDryRunRes = add(defaultFiles, defaultFilesDryRun1)
+var defaultFilesDryRunRes = testutils.Add(defaultFiles, defaultFilesDryRun1)
 
 func TestCopyDirDryRun(t *testing.T) {
 	type args struct {
@@ -195,7 +192,7 @@ func TestCopyDirDryRun(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			rootDir := t.TempDir()
 			createTestDirectory(t, rootDir)
-			addFs(t, test.args.updateDest, path.Join(rootDir, "dest"))
+			testutils.AddFs(t, test.args.updateDest, path.Join(rootDir, "dest"))
 			t.Logf("dryRun: %v", test.args.dryRun)
 			t.Logf("verbose: %v", test.args.verbose)
 			t.Logf("copyIfFileExists: %v", test.args.copyIfFileExists)
@@ -212,140 +209,10 @@ func TestCopyDirDryRun(t *testing.T) {
 			} else if err != nil {
 				//  pass next test
 			} else {
-				checkFs(t, test.args.dirDest, path.Join(rootDir, "dest"))
+				testutils.CheckFs(t, test.args.dirDest, path.Join(rootDir, "dest"))
 			}
 		})
 	}
-}
-
-func checkFs(t *testing.T, dest map[string][]byte, rootDir string) {
-	listeFileRef := []string{}
-	for filename, content := range dest {
-		listeFileRef = append(listeFileRef, normalizePath(filename))
-		listeFileRef = addParent(listeFileRef, filename)
-		var filePath string
-		if path.Ext(rootDir) == ".txt" || path.Ext(rootDir) == ".csv" || path.Ext(rootDir) == ".log" {
-			// dest is a file
-			filePath = rootDir
-		} else {
-			filePath = path.Join(rootDir, filename)
-		}
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			t.Errorf("file %v not copied", filename)
-		} else if err != nil {
-			t.Errorf("error for read file %v : %v", filename, err)
-		} else {
-			dat, err := os.ReadFile(filePath)
-			if err != nil {
-				t.Errorf("error for read file %v : %v", filename, err)
-			} else if bytes.Compare(dat, content) != 0 {
-				t.Errorf("error for content of file %v : %v != %v", filename, content, dat)
-			}
-		}
-	}
-	t.Logf("list files: %v", listeFileRef)
-
-	listeFileFs := []string{}
-	err := filepath.Walk(rootDir,
-		func(filePath string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			f, err := filepath.Rel(rootDir, filePath)
-			if err != nil {
-				return fmt.Errorf("error for relativize %v", filePath)
-			}
-			t.Logf("file %v", f)
-			if f != "." {
-				f2 := normalizePath(f)
-				listeFileFs = append(listeFileFs, f2)
-				if !contains(listeFileRef, f2) {
-					t.Errorf("file %v must not be is on FS", f2)
-				}
-			}
-			return nil
-		})
-	if err != nil {
-		t.Errorf("error for read directory %v : %v", rootDir, err)
-	} else {
-
-	}
-
-}
-
-func addFs(t *testing.T, dest map[string][]byte, rootDir string) {
-	listeFileRef := []string{}
-	for filename, content := range dest {
-		listeFileRef = append(listeFileRef, normalizePath(filename))
-		listeFileRef = addParent(listeFileRef, filename)
-		var filePath string
-		if path.Ext(rootDir) == ".txt" || path.Ext(rootDir) == ".csv" || path.Ext(rootDir) == ".log" {
-			// dest is a file
-			filePath = rootDir
-		} else {
-			filePath = path.Join(rootDir, filename)
-		}
-		err := os.WriteFile(filePath, content, 0755)
-		if err != nil {
-			t.Errorf("error for create file %v : %v", filename, err)
-		}
-	}
-	t.Logf("list files: %v", listeFileRef)
-}
-
-func addParent(listPath []string, filename string) []string {
-	filename = normalizePath(filename)
-	s := filename
-	for i := 0; i < 10; i++ {
-		s := filepath.Dir(s)
-		if s != "." && len(s) > 0 {
-			if contains(listPath, s) {
-				break
-			} else {
-				listPath = append(listPath, s)
-			}
-		} else {
-			break
-		}
-	}
-
-	return listPath
-}
-
-func normalizePath(file string) string {
-	file = path.Clean(file)
-	return strings.ReplaceAll(file, "\\", "/")
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
-}
-
-func remove(fileList map[string][]byte, filesToRemove []string) map[string][]byte {
-	fileListModified := make(map[string][]byte)
-	for filename, content := range fileList {
-		if !contains(filesToRemove, filename) {
-			fileListModified[filename] = content
-		}
-	}
-	return fileListModified
-}
-
-func add(fileList map[string][]byte, filesToAdd map[string][]byte) map[string][]byte {
-	fileListModified := make(map[string][]byte)
-	for filename, content := range fileList {
-		fileListModified[filename] = content
-	}
-	for filename, content := range filesToAdd {
-		fileListModified[filename] = content
-	}
-	return fileListModified
 }
 
 func createTestDirectory(t *testing.T, rootDir string) bool {

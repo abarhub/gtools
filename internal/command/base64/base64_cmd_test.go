@@ -273,9 +273,7 @@ func benchmarkEncodeDecodeBase64(b *testing.B, nb int, bufferSize int) {
 					_, err := os.ReadFile(fileOutputPath)
 					if err != nil {
 						b.Errorf("EncodeDecodeBase64() error = %v", err)
-					} /*else if string(buf[:]) != tt.args.output {
-						b.Errorf("EncodeDecodeBase64() output = %v, want %v", string(buf[:]), tt.args.output)
-					}*/
+					}
 				}
 			}
 		}

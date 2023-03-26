@@ -98,15 +98,3 @@ func splitString(s string) ([]string, error) {
 	}
 	return res, nil
 }
-
-func compareSliceString(slice, slice2 []string) bool {
-	if len(slice) != len(slice2) {
-		return false
-	}
-	for i := 0; i < len(slice); i++ {
-		if slice[i] != slice2[i] {
-			return false
-		}
-	}
-	return true
-}

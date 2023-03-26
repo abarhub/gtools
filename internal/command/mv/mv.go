@@ -61,7 +61,7 @@ func mvCommandWriter(param MvParameters, out io.Writer) error {
 		return nil
 	} else {
 		if param.CopyAndDelete {
-			err2 := MoveFile(param.PathSrc, dest, param)
+			err2 := MoveFile(param.PathSrc, dest, param, out)
 			if err2 != nil {
 				s := ""
 				for _, err3 := range err2 {
@@ -74,7 +74,10 @@ func mvCommandWriter(param MvParameters, out io.Writer) error {
 			}
 		} else {
 			if param.Verbose {
-				fmt.Printf("%v -> %v\n", param.PathSrc, dest)
+				_, err := fmt.Fprintf(out, "%v -> %v\n", param.PathSrc, dest)
+				if err != nil {
+					return err
+				}
 			}
 			err = os.Rename(param.PathSrc, dest)
 			if err != nil {
@@ -85,7 +88,7 @@ func mvCommandWriter(param MvParameters, out io.Writer) error {
 	return nil
 }
 
-func MoveFile(source, destination string, param MvParameters) (result []error) {
+func MoveFile(source, destination string, param MvParameters, out io.Writer) (result []error) {
 	srcClosed := false
 	src, err := os.Open(source)
 	if err != nil {
@@ -116,7 +119,10 @@ func MoveFile(source, destination string, param MvParameters) (result []error) {
 		}
 	}(dst)
 	if param.Verbose {
-		fmt.Printf("copy %v -> %v\n", source, destination)
+		_, err := fmt.Fprintf(out, "copy %v -> %v\n", source, destination)
+		if err != nil {
+			return []error{err}
+		}
 	}
 	_, err = io.Copy(dst, src)
 	if err != nil {
@@ -133,7 +139,10 @@ func MoveFile(source, destination string, param MvParameters) (result []error) {
 		return []error{err}
 	}
 	if param.Verbose {
-		fmt.Printf("rm %v\n", source)
+		_, err := fmt.Fprintf(out, "rm %v\n", source)
+		if err != nil {
+			return []error{err}
+		}
 	}
 	err = os.Remove(source)
 	if err != nil {

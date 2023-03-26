@@ -38,6 +38,25 @@ var result2 = map[string][]byte{
 	"test02_4.log": {4, 5, 6},
 }
 
+var result3 = map[string][]byte{
+	"test_01.txt": {1, 2, 3},
+}
+
+var result4 = map[string][]byte{
+	"test_02.txt": {1, 2, 3},
+}
+
+var outEmpty = []string{}
+
+var out = []string{
+	"src/dir1 -> dest",
+}
+
+var out2 = []string{
+	"copy src/test2.txt -> test_02.txt",
+	"rm src/test2.txt",
+}
+
 func Test_mvCommandWriter(t *testing.T) {
 	type args struct {
 		param MvParameters
@@ -50,9 +69,20 @@ func Test_mvCommandWriter(t *testing.T) {
 		out       []string
 		wantErr   bool
 	}{
-		{"test1", args{param: MvParameters{PathSrc: "src", PathDest: "dest", Verbose: false, CopyAndDelete: false}}, defaultFiles, defaultFiles, []string{}, false},
-		{"test2", args{param: MvParameters{PathSrc: "src/dir1", PathDest: "dest", Verbose: false, CopyAndDelete: false}}, defaultFiles, result, []string{}, false},
-		{"test3", args{param: MvParameters{PathSrc: "src/dir2", PathDest: "dest", Verbose: false, CopyAndDelete: false}}, defaultFiles, result2, []string{}, false},
+		{"test1", args{param: MvParameters{PathSrc: "src", PathDest: "dest", Verbose: false, CopyAndDelete: false}},
+			defaultFiles, defaultFiles, outEmpty, false},
+		{"test2", args{param: MvParameters{PathSrc: "src/dir1", PathDest: "dest", Verbose: false, CopyAndDelete: false}},
+			defaultFiles, result, outEmpty, false},
+		{"test3", args{param: MvParameters{PathSrc: "src/dir2", PathDest: "dest", Verbose: false, CopyAndDelete: false}},
+			defaultFiles, result2, outEmpty, false},
+		{"test4", args{param: MvParameters{PathSrc: "src/test1.txt", PathDest: "test_01.txt", Verbose: false, CopyAndDelete: false}},
+			defaultFiles, result3, outEmpty, false},
+		{"test5", args{param: MvParameters{PathSrc: "src/test2.txt", PathDest: "test_02.txt", Verbose: false, CopyAndDelete: true}},
+			defaultFiles, result4, outEmpty, false},
+		{"test6", args{param: MvParameters{PathSrc: "src/dir1", PathDest: "dest", Verbose: true, CopyAndDelete: false}},
+			defaultFiles, result, out, false},
+		{"test7", args{param: MvParameters{PathSrc: "src/test2.txt", PathDest: "test_02.txt", Verbose: true, CopyAndDelete: true}},
+			defaultFiles, result4, out2, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

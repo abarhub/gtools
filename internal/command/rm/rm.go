@@ -2,6 +2,7 @@ package rm
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 )
@@ -14,6 +15,10 @@ type RmParameters struct {
 }
 
 func RmCommand(param RmParameters) error {
+	return rmCommandWriter(param, os.Stdout)
+}
+
+func rmCommandWriter(param RmParameters, out io.Writer) error {
 
 	if len(param.Path) == 0 {
 		return fmt.Errorf("file is empty")
@@ -26,13 +31,13 @@ func RmCommand(param RmParameters) error {
 		return fmt.Errorf("error for source : %v", err)
 	}
 	if info.IsDir() {
-		err = deleteDirectory(param.Path, param)
+		err = deleteDirectory(param.Path, param, out)
 		if err != nil {
 			return err
 		}
 	} else {
 		if param.Verbose {
-			fmt.Printf("%v\n", param.Path)
+			fmt.Fprintf(out, "%v\n", param.Path)
 		}
 		err := os.Remove(param.Path)
 		if err != nil {
@@ -43,7 +48,7 @@ func RmCommand(param RmParameters) error {
 	return nil
 }
 
-func deleteDirectory(pathSrc string, param RmParameters) error {
+func deleteDirectory(pathSrc string, param RmParameters, out io.Writer) error {
 	files, err := os.ReadDir(pathSrc)
 	if err != nil {
 		return err
@@ -53,20 +58,26 @@ func deleteDirectory(pathSrc string, param RmParameters) error {
 		srcFile := path.Join(pathSrc, f.Name())
 
 		if f.IsDir() {
-			err = deleteDirectory(srcFile, param)
+			err = deleteDirectory(srcFile, param, out)
 			if err != nil {
 				return err
 			}
-			if param.Verbose {
-				fmt.Printf("%v\n", srcFile)
-			}
-			err := os.Remove(srcFile)
-			if err != nil {
-				return err
-			}
+			//if param.Verbose {
+			//	_, err = fmt.Fprintf(out, "%v\n", srcFile)
+			//	if err != nil {
+			//		return err
+			//	}
+			//}
+			//err := os.Remove(srcFile)
+			//if err != nil {
+			//	return err
+			//}
 		} else {
 			if param.Verbose {
-				fmt.Printf("%v\n", srcFile)
+				_, err = fmt.Fprintf(out, "%v\n", srcFile)
+				if err != nil {
+					return err
+				}
 			}
 			err := os.Remove(srcFile)
 			if err != nil {
@@ -75,7 +86,10 @@ func deleteDirectory(pathSrc string, param RmParameters) error {
 		}
 	}
 	if param.Verbose {
-		fmt.Printf("%v\n", pathSrc)
+		_, err = fmt.Fprintf(out, "%v\n", pathSrc)
+		if err != nil {
+			return err
+		}
 	}
 	err = os.Remove(pathSrc)
 	if err != nil {

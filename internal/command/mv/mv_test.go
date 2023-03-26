@@ -104,11 +104,13 @@ func Test_mvCommandWriter(t *testing.T) {
 						return
 					}
 					testutils.CheckFs(t, tt.filesDest, path.Join(rootDir, tt.args.param.PathDest))
-					res, err := splitString(out.String())
-					if err != nil {
-						t.Errorf("error for split : %v", err)
-					} else if !reflect.DeepEqual(tt.out, res) {
-						t.Errorf("error for result : %v != %v", tt.out, res)
+					if !t.Failed() {
+						res, err := splitString(out.String())
+						if err != nil {
+							t.Errorf("error for split : %v", err)
+						} else if !reflect.DeepEqual(tt.out, res) {
+							t.Errorf("error for result : %v != %v", tt.out, res)
+						}
 					}
 				})
 			}

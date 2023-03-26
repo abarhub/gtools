@@ -53,6 +53,39 @@ var result3 = map[string][]byte{
 	"dir2/test02_4.log": {4, 5, 6},
 }
 
+var result4 = map[string][]byte{
+	"test1.txt":         {1, 2, 3},
+	"test2.txt":         {1, 2, 3},
+	"test3.csv":         {1, 2, 3},
+	"test4.csv":         {4, 5, 6},
+	"test5.log":         {3, 2, 1},
+	"dir1/test03.csv":   {7, 8, 9},
+	"dir2/test02_1.txt": {4, 5, 6},
+	"dir2/test02_2.csv": {4, 5, 6},
+	"dir2/test02_3.txt": {4, 5, 6},
+	"dir2/test02_4.log": {4, 5, 6},
+}
+
+var result5 = map[string][]byte{
+	"test3.csv":         {1, 2, 3},
+	"test4.csv":         {4, 5, 6},
+	"test5.log":         {3, 2, 1},
+	"dir1/test03.csv":   {7, 8, 9},
+	"dir2/test02_2.csv": {4, 5, 6},
+	"dir2/test02_4.log": {4, 5, 6},
+}
+
+var result6 = map[string][]byte{
+	"test3.csv":         {1, 2, 3},
+	"test4.csv":         {4, 5, 6},
+	"test5.log":         {3, 2, 1},
+	"dir1/test01.txt":   {7, 8, 9},
+	"dir1/test02.txt":   {7, 8, 9},
+	"dir1/test03.csv":   {7, 8, 9},
+	"dir2/test02_2.csv": {4, 5, 6},
+	"dir2/test02_4.log": {4, 5, 6},
+}
+
 var outEmpty = []string{}
 
 var out = []string{
@@ -86,6 +119,17 @@ func Test_rmCommandWriter(t *testing.T) {
 			defaultFiles, result3, outEmpty, "", false, true},
 		{"test5", args{param: RmParameters{Path: "dir1", Verbose: true, Confirmation: false, Recursive: true}},
 			defaultFiles, result3, out, "", false, false},
+		{"test6", args{param: RmParameters{Path: "dir1", Verbose: false, Confirmation: false, Recursive: true,
+			IncludePath: []string{"*.txt"}}},
+			defaultFiles, result4, outEmpty, "", false, false},
+		{"test7", args{param: RmParameters{Path: ".", Verbose: false, Confirmation: false, Recursive: true,
+			IncludePath: []string{"*.txt"}}},
+			defaultFiles, result5, outEmpty, "", false, false},
+		{"test8", args{param: RmParameters{Path: ".", Verbose: false, Confirmation: false, Recursive: true,
+			IncludePath: []string{"*.txt"}, ExcludePath: []string{"dir1"}}},
+			defaultFiles, result6, outEmpty, "", false, false},
+		{"test9", args{param: RmParameters{Path: "dir1", Verbose: false, Confirmation: false, Recursive: true, DryRun: true}},
+			defaultFiles, defaultFiles, out, "", false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

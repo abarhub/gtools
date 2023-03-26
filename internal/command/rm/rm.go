@@ -2,6 +2,7 @@ package rm
 
 import (
 	"fmt"
+	"gtools/internal/utils"
 	"io"
 	"os"
 	"path"
@@ -12,6 +13,9 @@ type RmParameters struct {
 	Confirmation bool
 	Recursive    bool
 	Verbose      bool
+	ExcludePath  []string
+	IncludePath  []string
+	DryRun       bool
 }
 
 func RmCommand(param RmParameters) error {
@@ -24,38 +28,23 @@ func rmCommandWriter(param RmParameters, out io.Writer) error {
 		return fmt.Errorf("file is empty")
 	}
 
+	if param.DryRun {
+		param.Verbose = true
+	}
+
 	info, err := os.Stat(param.Path)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("file %v not exists", param.Path)
 	} else if err != nil {
 		return fmt.Errorf("error for source : %v", err)
 	}
-	if info.IsDir() {
-		if param.Recursive {
-			err = deleteDirectory(param.Path, param, out)
-			if err != nil {
-				return err
-			}
-		} else {
-			if param.Verbose {
-				_, err := fmt.Fprintf(out, "%v\n", param.Path)
-				if err != nil {
-					return err
-				}
-			}
-			err := os.Remove(param.Path)
-			if err != nil {
-				return err
-			}
+	if info.IsDir() && param.Recursive {
+		err = deleteDirectory(param.Path, param, out)
+		if err != nil {
+			return err
 		}
 	} else {
-		if param.Verbose {
-			_, err := fmt.Fprintf(out, "%v\n", param.Path)
-			if err != nil {
-				return err
-			}
-		}
-		err := os.Remove(param.Path)
+		err = deleteFile(param.Path, param, out)
 		if err != nil {
 			return err
 		}
@@ -73,43 +62,81 @@ func deleteDirectory(pathSrc string, param RmParameters, out io.Writer) error {
 	for _, f := range files {
 		srcFile := path.Join(pathSrc, f.Name())
 
-		if f.IsDir() {
-			err = deleteDirectory(srcFile, param, out)
-			if err != nil {
-				return err
-			}
-			//if param.Verbose {
-			//	_, err = fmt.Fprintf(out, "%v\n", srcFile)
-			//	if err != nil {
-			//		return err
-			//	}
-			//}
-			//err := os.Remove(srcFile)
-			//if err != nil {
-			//	return err
-			//}
-		} else {
-			if param.Verbose {
-				_, err = fmt.Fprintf(out, "%v\n", srcFile)
+		toCopy, err := fileToRemove(srcFile, param, true)
+		if err != nil {
+			return err
+		} else if toCopy {
+			if f.IsDir() {
+				err = deleteDirectory(srcFile, param, out)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = deleteFile(srcFile, param, out)
 				if err != nil {
 					return err
 				}
 			}
-			err := os.Remove(srcFile)
-			if err != nil {
-				return err
-			}
 		}
 	}
-	if param.Verbose {
-		_, err = fmt.Fprintf(out, "%v\n", pathSrc)
-		if err != nil {
-			return err
-		}
-	}
-	err = os.Remove(pathSrc)
+	err = deleteFile(pathSrc, param, out)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func deleteFile(file string, param RmParameters, out io.Writer) error {
+	toCopy, err := fileToRemove(file, param, true)
+	if err != nil {
+		return err
+	} else if toCopy {
+		toCopy, err := fileToRemove(file, param, false)
+		if err != nil {
+			return err
+		} else if toCopy {
+			if param.Verbose {
+				_, err = fmt.Fprintf(out, "%v\n", file)
+				if err != nil {
+					return err
+				}
+			}
+			if !param.DryRun {
+				err = os.Remove(file)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func fileToRemove(file string, param RmParameters, exclude bool) (bool, error) {
+	if exclude && len(param.ExcludePath) > 0 {
+		for _, s := range param.ExcludePath {
+			match, err := matchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return false, nil
+			}
+		}
+	}
+	if !exclude && len(param.IncludePath) > 0 {
+		for _, s := range param.IncludePath {
+			match, err := matchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	return true, nil
+}
+
+func matchGlob(file, pattern string) (bool, error) {
+	return utils.MatchGlob(file, pattern)
 }

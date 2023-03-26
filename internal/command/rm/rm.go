@@ -31,13 +31,29 @@ func rmCommandWriter(param RmParameters, out io.Writer) error {
 		return fmt.Errorf("error for source : %v", err)
 	}
 	if info.IsDir() {
-		err = deleteDirectory(param.Path, param, out)
-		if err != nil {
-			return err
+		if param.Recursive {
+			err = deleteDirectory(param.Path, param, out)
+			if err != nil {
+				return err
+			}
+		} else {
+			if param.Verbose {
+				_, err := fmt.Fprintf(out, "%v\n", param.Path)
+				if err != nil {
+					return err
+				}
+			}
+			err := os.Remove(param.Path)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		if param.Verbose {
-			fmt.Fprintf(out, "%v\n", param.Path)
+			_, err := fmt.Fprintf(out, "%v\n", param.Path)
+			if err != nil {
+				return err
+			}
 		}
 		err := os.Remove(param.Path)
 		if err != nil {

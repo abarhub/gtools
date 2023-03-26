@@ -79,7 +79,7 @@ func AddFs(t *testing.T, dest map[string][]byte, rootDir string) {
 		}
 		parent := filepath.Dir(filePath)
 		if parent != "" && parent != "." {
-			err := os.MkdirAll(parent, 0600)
+			err := os.MkdirAll(parent, 0700)
 			if err != nil {
 				t.Errorf("error for create dir %v : %v", parent, err)
 				return
@@ -147,4 +147,23 @@ func Add(fileList map[string][]byte, filesToAdd map[string][]byte) map[string][]
 		fileListModified[filename] = content
 	}
 	return fileListModified
+}
+
+func ChangeDir(t *testing.T, rep string, f func()) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		t.Errorf("error for Getwd = %v", err)
+	}
+	t.Cleanup(func() {
+		err := os.Chdir(currentDir)
+		if err != nil {
+			t.Errorf("error for Chdir(%v) = %v", currentDir, err)
+		}
+	})
+	err = os.Chdir(rep)
+	if err != nil {
+		t.Errorf("error for chdir = %v", err)
+	} else {
+		f()
+	}
 }

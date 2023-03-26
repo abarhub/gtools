@@ -3,7 +3,6 @@ package ls
 import (
 	"bytes"
 	"gtools/internal/testutils"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -41,7 +40,6 @@ func Test_lsCommandWriter(t *testing.T) {
 		outList []string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{"test1", args{LsParameters{"", false, false}}, defaultFiles,
 			result, false},
 		{"test2", args{LsParameters{"dir1", false, false}}, defaultFiles,
@@ -55,21 +53,7 @@ func Test_lsCommandWriter(t *testing.T) {
 			dir := rootDir
 			testutils.AddFs(t, tt.files, dir)
 			if !t.Failed() {
-				currentDir, err := os.Getwd()
-				if err != nil {
-					t.Errorf("lsCommandWriter() error for Getwd = %v", err)
-					return
-				}
-				t.Cleanup(func() {
-					err := os.Chdir(currentDir)
-					if err != nil {
-						t.Errorf("lsCommandWriter() error for Chdir(%v) = %v", currentDir, err)
-					}
-				})
-				err = os.Chdir(dir)
-				if err != nil {
-					t.Errorf("lsCommandWriter() error for chdir = %v", err)
-				} else {
+				testutils.ChangeDir(t, dir, func() {
 					output := new(bytes.Buffer)
 					t.Logf("lsCommandWriter ...")
 					err := lsCommandWriter(tt.args.param, output)
@@ -87,7 +71,7 @@ func Test_lsCommandWriter(t *testing.T) {
 							t.Errorf("error for result : %v != %v", tt.outList, res)
 						}
 					}
-				}
+				})
 			}
 		})
 	}

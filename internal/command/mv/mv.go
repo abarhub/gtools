@@ -15,7 +15,10 @@ type MvParameters struct {
 }
 
 func MvCommand(param MvParameters) error {
+	return mvCommandWriter(param, os.Stdout)
+}
 
+func mvCommandWriter(param MvParameters, out io.Writer) error {
 	if len(param.PathSrc) == 0 {
 		return fmt.Errorf("source is empty")
 	}

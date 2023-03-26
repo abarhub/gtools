@@ -56,7 +56,18 @@ func TestDiskUsage(t *testing.T) {
 			dir := rootDir
 			testutils.AddFs(t, tt.args.files, dir)
 			if !t.Failed() {
-				err := os.Chdir(dir)
+				currentDir, err := os.Getwd()
+				if err != nil {
+					t.Errorf("DiskUsage() error for Getwd = %v", err)
+					return
+				}
+				t.Cleanup(func() {
+					err := os.Chdir(currentDir)
+					if err != nil {
+						t.Errorf("DiskUsage() error for Chdir(%v) = %v", currentDir, err)
+					}
+				})
+				err = os.Chdir(dir)
 				if err != nil {
 					t.Errorf("DiskUsage() error for chdir = %v", err)
 				} else {

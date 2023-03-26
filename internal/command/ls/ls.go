@@ -2,6 +2,7 @@ package ls
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -14,17 +15,24 @@ type LsParameters struct {
 
 func LsCommand(param LsParameters) error {
 
-	var dir string
-	if len(param.Path) > 0 {
-		dir = param.Path
-	} else {
-		dir = "."
-	}
-
-	return listFiles(dir, param, "")
+	return lsCommandWriter(param, os.Stdout)
 }
 
-func listFiles(path string, param LsParameters, rep string) error {
+func lsCommandWriter(param LsParameters, out io.Writer) error {
+
+	var dir, repInit string
+	if len(param.Path) > 0 {
+		dir = param.Path
+		repInit = dir
+	} else {
+		dir = "."
+		repInit = ""
+	}
+
+	return listFiles(dir, param, repInit, out)
+}
+
+func listFiles(path string, param LsParameters, rep string, out io.Writer) error {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return err
@@ -40,12 +48,18 @@ func listFiles(path string, param LsParameters, rep string) error {
 				s += "F"
 			}
 			s += " " + filename
-			fmt.Println(s)
+			_, err = fmt.Fprintln(out, s)
+			if err != nil {
+				return err
+			}
 		} else {
-			fmt.Println(filename)
+			_, err = fmt.Fprintln(out, filename)
+			if err != nil {
+				return err
+			}
 		}
 		if file.IsDir() && param.Recurvive {
-			err := listFiles(filepath.Join(path, file.Name()), param, filepath.Join(rep, file.Name()))
+			err := listFiles(filepath.Join(path, file.Name()), param, filepath.Join(rep, file.Name()), out)
 			if err != nil {
 				return err
 			}

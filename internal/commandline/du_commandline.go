@@ -20,7 +20,8 @@ var duCmd = &cobra.Command{
 		if len(args) > 0 {
 			path = args[0]
 		}
-		commandError = cmdDu(du.DuParameters{path, humanReadable, thresholdStr, maxDepth})
+		commandError = cmdDu(du.DuParameters{path, humanReadable, thresholdStr,
+			maxDepth, []string{}, []string{}})
 		return nil
 	},
 }

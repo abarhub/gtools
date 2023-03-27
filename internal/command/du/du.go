@@ -2,6 +2,7 @@ package du
 
 import (
 	"fmt"
+	"gtools/internal/utils"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,9 +14,11 @@ type DuParameters struct {
 	HumanReadable bool
 	ThresholdStr  string
 	MaxDepth      int
+	ExcludePath   []string
+	IncludePath   []string
 }
 
-func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64, out io.Writer) (sizeResult int64, errResult error) {
+func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64, out io.Writer, param DuParameters) (sizeResult int64, errResult error) {
 	var size int64
 
 	dir, err := os.Open(currPath)
@@ -40,14 +43,27 @@ func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, thr
 	}
 
 	for _, file := range files {
-		if file.IsDir() {
-			sizeDir, err := diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), depth+1, maxDepth, humanReadable, threshold, out)
-			if err != nil {
-				return 0, err
+		filePath := filepath.Join(currPath, file.Name())
+		toScan, err := fileToScan(filePath, param, true)
+		if err != nil {
+			return 0, err
+		} else if toScan {
+			if file.IsDir() {
+				sizeDir, err := diskUsage(fmt.Sprintf("%s/%s", currPath, file.Name()), depth+1, maxDepth, humanReadable,
+					threshold, out, param)
+				if err != nil {
+					return 0, err
+				}
+				size += sizeDir
+			} else {
+				filePath := filepath.Join(currPath, file.Name())
+				toScan, err := fileToScan(filePath, param, true)
+				if err != nil {
+					return 0, err
+				} else if toScan {
+					size += file.Size()
+				}
 			}
-			size += sizeDir
-		} else {
-			size += file.Size()
 		}
 	}
 
@@ -146,7 +162,36 @@ func DiskUsageWriter(param DuParameters, out io.Writer) error {
 		}
 	}
 
-	_, err := diskUsage(dir, 0, maxDepth, humanReadable, threshold, out)
+	_, err := diskUsage(dir, 0, maxDepth, humanReadable, threshold, out, param)
 
 	return err
+}
+
+func fileToScan(file string, param DuParameters, exclude bool) (bool, error) {
+	if exclude && len(param.ExcludePath) > 0 {
+		for _, s := range param.ExcludePath {
+			match, err := matchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return false, nil
+			}
+		}
+	}
+	if !exclude && len(param.IncludePath) > 0 {
+		for _, s := range param.IncludePath {
+			match, err := matchGlob(file, s)
+			if err != nil {
+				return false, err
+			} else if match {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	return true, nil
+}
+
+func matchGlob(file, pattern string) (bool, error) {
+	return utils.MatchGlob(file, pattern)
 }

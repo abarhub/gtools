@@ -9,6 +9,8 @@ var (
 	humanReadable = false
 	thresholdStr  = ""
 	maxDepth      = 0
+	excludePathDu []string
+	includePathDu []string
 )
 
 var duCmd = &cobra.Command{
@@ -21,7 +23,7 @@ var duCmd = &cobra.Command{
 			path = args[0]
 		}
 		commandError = cmdDu(du.DuParameters{path, humanReadable, thresholdStr,
-			maxDepth, []string{}, []string{}})
+			maxDepth, excludePathDu, includePathDu})
 		return nil
 	},
 }
@@ -34,7 +36,9 @@ func ConfigureDuCommandLine(rootCmd *cobra.Command) {
 
 	duCmd.Flags().BoolVarP(&humanReadable, "humanReadable", "r", false, "\"Human-readable\" output.  Use unit suffixes: Byte, Kilobyte, Megabyte, Gigabyte.")
 	duCmd.Flags().StringVarP(&thresholdStr, "threshold", "t", "", "threshold of the size, any folders' size larger than the threshold will be print. for example, '1G', '10M', '100K', '1024'")
-	duCmd.Flags().IntVarP(&maxDepth, "maxDepth", "d", 0, "list its subdirectories and their sizes to any desired level of depth (i.e., to any level of subdirectories) in a directory tree.")
+	duCmd.Flags().IntVarP(&maxDepth, "maxDepth", "d", 1, "list its subdirectories and their sizes to any desired level of depth (i.e., to any level of subdirectories) in a directory tree.")
+	duCmd.Flags().StringSliceVarP(&excludePathDu, "exclude", "e", []string{}, "Path to exclude")
+	duCmd.Flags().StringSliceVarP(&includePathDu, "include", "i", []string{}, "Path to include")
 
 	rootCmd.AddCommand(duCmd)
 }

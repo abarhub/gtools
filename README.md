@@ -7,8 +7,10 @@
 
 Tools for files
 
-to build executable
+to build executable for windows
 ```shell
+set GOOS=windows
+set GOARCH=amd64
 go build ./cmd/gtools.go
 ```
 

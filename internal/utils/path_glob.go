@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"regexp"
 )
 
@@ -16,7 +15,6 @@ func MatchGlob(file string, glob string) (bool, error) {
 	var regexGlob *regexp.Regexp
 	if regexMap[glob] == nil {
 		globConverted := convert(glob)
-		fmt.Println("convert=", globConverted, glob)
 		r, err := regexp.Compile(globConverted)
 		if err != nil {
 			return false, err

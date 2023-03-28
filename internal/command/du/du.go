@@ -18,7 +18,8 @@ type DuParameters struct {
 	IncludePath   []string
 }
 
-func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64, out io.Writer, param DuParameters) (sizeResult int64, errResult error) {
+func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, threshold int64,
+	out io.Writer, param DuParameters) (sizeResult int64, errResult error) {
 	var size int64
 
 	dir, err := os.Open(currPath)

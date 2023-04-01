@@ -34,7 +34,20 @@ var result2 = map[string]string{
 	"dir1/": "9",
 }
 
+var result3 = map[string]string{
+	"./dir1/": "3",
+	"./dir2/": "6",
+	"./":      "18",
+}
+
+var result4 = map[string]string{
+	"./dir1/": "6",
+	"./dir2/": "6",
+	"./":      "18",
+}
+
 func TestDiskUsage(t *testing.T) {
+	empty := []string{}
 	type args struct {
 		param  DuParameters
 		files  map[string][]byte
@@ -45,9 +58,11 @@ func TestDiskUsage(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"test1", args{DuParameters{"", false, "", -1}, defaultFiles, result}, false},
-		{"test2", args{DuParameters{".", false, "", -1}, defaultFiles, result}, false},
-		{"test3", args{DuParameters{"dir1", false, "", -1}, defaultFiles, result2}, false},
+		{"test1", args{DuParameters{"", false, "", -1, empty, empty}, defaultFiles, result}, false},
+		{"test2", args{DuParameters{".", false, "", -1, empty, empty}, defaultFiles, result}, false},
+		{"test3", args{DuParameters{"dir1", false, "", -1, empty, empty}, defaultFiles, result2}, false},
+		{"test4", args{DuParameters{"", false, "", -1, []string{"*.txt"}, empty}, defaultFiles, result3}, false},
+		{"test5", args{DuParameters{"", false, "", -1, empty, []string{"*.txt"}}, defaultFiles, result4}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

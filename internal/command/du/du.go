@@ -58,7 +58,7 @@ func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, thr
 				size += sizeDir
 			} else {
 				filePath := filepath.Join(currPath, file.Name())
-				toScan, err := fileToScan(filePath, param, true)
+				toScan, err := fileToScan(filePath, param, false)
 				if err != nil {
 					return 0, err
 				} else if toScan {

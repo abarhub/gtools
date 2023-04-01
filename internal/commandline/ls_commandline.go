@@ -6,8 +6,12 @@ import (
 )
 
 var (
-	longFormat bool
-	recursive  bool
+	longFormat         bool
+	recursive          bool
+	excludePathLs      []string
+	includePathLs      []string
+	displayDirectoryLs bool
+	displayAllLs       bool
 )
 
 var lsCmd = &cobra.Command{
@@ -20,7 +24,8 @@ var lsCmd = &cobra.Command{
 		if len(args) > 0 {
 			path = args[0]
 		}
-		param := ls.LsParameters{path, longFormat, recursive}
+		param := ls.LsParameters{path, longFormat, recursive,
+			excludePathLs, includePathLs, displayDirectoryLs, displayAllLs}
 		commandError = cmdLs(param)
 		return nil
 	},
@@ -37,6 +42,12 @@ func ConfigureLsCommandLine(rootCmd *cobra.Command) {
 		"Long listing format")
 	lsCmd.Flags().BoolVarP(&recursive, "recursive", "r", false,
 		"List subdirectory recursively")
+	lsCmd.Flags().StringSliceVarP(&excludePathLs, "exclude", "e", []string{}, "Path to exclude")
+	lsCmd.Flags().StringSliceVarP(&includePathLs, "include", "i", []string{}, "Path to include")
+	lsCmd.Flags().BoolVarP(&displayDirectoryLs, "displayDirectory", "d", true,
+		"Display directory")
+	lsCmd.Flags().BoolVarP(&displayAllLs, "displayAll", "a", false,
+		"Display dot files")
 	rootCmd.AddCommand(lsCmd)
 
 }

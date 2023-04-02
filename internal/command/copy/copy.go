@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 )
 
 type FileExists int
@@ -90,46 +89,104 @@ func copyDir2(src string, dest string, param CopyParameters) error {
 		}
 	}
 
-	files, err := os.ReadDir(src)
+	walk, err := utils.CreateWalktree(src, param.ExcludePath, param.IncludePath)
 	if err != nil {
 		return err
 	}
 
-	for _, f := range files {
-		srcFile := path.Join(src, f.Name())
-		destFile := path.Join(dest2, f.Name())
-		toCopy, err := fileToCopy(srcFile, param, true)
-		if err != nil {
-			return err
-		} else if toCopy {
-			if f.IsDir() {
-				err = copyDir2(srcFile, destFile, param)
-				if err != nil {
-					return err
-				}
-			} else {
-				toCopy, err = fileToCopy(srcFile, param, false)
-				if err != nil {
-					return err
-				} else if toCopy {
-					if !param.DryRun {
-						err = createDirIfNeeded(destFile)
-						if err != nil {
-							return err
-						}
-					}
-					errors := copyFile(srcFile, destFile, param)
-					err = convertErrorArryToError(errors)
-					if err != nil {
-						return err
-					}
-				}
+	//walk.SetDirectoryParse(func(srcFile string, destFile string) error {
+	//	err = copyDir2(srcFile, destFile, param)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	return nil
+	//})
+
+	walk.SetFileParse(func(srcFile string, destFile string) error {
+		if !param.DryRun {
+			err = createDirIfNeeded(destFile)
+			if err != nil {
+				return err
 			}
 		}
-	}
+		errors := copyFile(srcFile, destFile, param)
+		err = convertErrorArryToError(errors)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 
-	return nil
+	walk.SetDir2(dest)
+
+	err = walk.Parse()
+
+	return err
 }
+
+//func copyDir02(src string, dest string, param CopyParameters) error {
+//
+//	_, err := os.Stat(src)
+//	if err != nil {
+//		return err
+//	}
+//
+//	dest2 := filepath.Clean(dest)
+//
+//	if dest2 == "." {
+//		return fmt.Errorf("Destination %v is invalid !", dest)
+//	}
+//
+//	if param.CreateDestDir && !param.DryRun {
+//		// create dest if not exists
+//		if _, err := os.Stat(dest2); os.IsNotExist(err) {
+//			err = os.Mkdir(dest2, 0755)
+//			if err != nil {
+//				return err
+//			}
+//		}
+//	}
+//
+//	files, err := os.ReadDir(src)
+//	if err != nil {
+//		return err
+//	}
+//
+//	for _, f := range files {
+//		srcFile := path.Join(src, f.Name())
+//		destFile := path.Join(dest2, f.Name())
+//		toCopy, err := fileToCopy(srcFile, param, true)
+//		if err != nil {
+//			return err
+//		} else if toCopy {
+//			if f.IsDir() {
+//				err = copyDir2(srcFile, destFile, param)
+//				if err != nil {
+//					return err
+//				}
+//			} else {
+//				toCopy, err = fileToCopy(srcFile, param, false)
+//				if err != nil {
+//					return err
+//				} else if toCopy {
+//					if !param.DryRun {
+//						err = createDirIfNeeded(destFile)
+//						if err != nil {
+//							return err
+//						}
+//					}
+//					errors := copyFile(srcFile, destFile, param)
+//					err = convertErrorArryToError(errors)
+//					if err != nil {
+//						return err
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	return nil
+//}
 
 func convertErrorArryToError(errors []error) error {
 	if errors != nil && len(errors) > 0 {
@@ -265,35 +322,35 @@ func copyFileToDest(file string, param CopyParameters, srcFile string) (bool, er
 	}
 }
 
-func fileToCopy(file string, param CopyParameters, exclude bool) (bool, error) {
-	if exclude && len(param.ExcludePath) > 0 {
-		for _, s := range param.ExcludePath {
-			match, err := matchGlob(file, s, param)
-			if err != nil {
-				return false, err
-			} else if match {
-				return false, nil
-			}
-		}
-	}
-	if !exclude && len(param.IncludePath) > 0 {
-		for _, s := range param.IncludePath {
-			match, err := matchGlob(file, s, param)
-			if err != nil {
-				return false, err
-			} else if match {
-				return true, nil
-			}
-		}
-		return false, nil
-	}
-	return true, nil
-}
-
-func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
-	if param.GlobDoubleStar {
-		return utils.MatchGlob(file, pattern)
-	} else {
-		return filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
-	}
-}
+//func fileToCopy(file string, param CopyParameters, exclude bool) (bool, error) {
+//	if exclude && len(param.ExcludePath) > 0 {
+//		for _, s := range param.ExcludePath {
+//			match, err := matchGlob(file, s, param)
+//			if err != nil {
+//				return false, err
+//			} else if match {
+//				return false, nil
+//			}
+//		}
+//	}
+//	if !exclude && len(param.IncludePath) > 0 {
+//		for _, s := range param.IncludePath {
+//			match, err := matchGlob(file, s, param)
+//			if err != nil {
+//				return false, err
+//			} else if match {
+//				return true, nil
+//			}
+//		}
+//		return false, nil
+//	}
+//	return true, nil
+//}
+//
+//func matchGlob(file, pattern string, param CopyParameters) (bool, error) {
+//	if param.GlobDoubleStar {
+//		return utils.MatchGlob(file, pattern)
+//	} else {
+//		return filepath.Match(pattern, strings.ReplaceAll(file, "\\", "/"))
+//	}
+//}

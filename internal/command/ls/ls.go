@@ -29,40 +29,13 @@ func lsCommandWriter(param LsParameters, out io.Writer) error {
 	var dir, repInit, directory string
 	directory = param.Path
 
-	if strings.Contains(directory, "**") {
-		param.Recurvive = true
-		i := strings.Index(directory, "**")
-		rep := param.Path[0:i]
-		include := param.Path[i:]
-		directory = rep
-		param.IncludePath = append(param.IncludePath, include)
-	} else if strings.Contains(directory, "*") || strings.Contains(directory, "?") {
-		i := strings.Index(directory, "*")
-		j := strings.Index(directory, "?")
-		var k, l int
-		if i == -1 {
-			k = j
-		} else if j == -1 {
-			k = i
-		} else if i > j {
-			k = j
-		} else {
-			k = i
+	splitDir := utils.SplitDirGlob(directory)
+	if splitDir.GlobPath != "" {
+		if splitDir.Recusive {
+			param.Recurvive = true
 		}
-		if k == 0 {
-			l = k
-		} else {
-			n := strings.LastIndexAny(param.Path[0:k], "/\\")
-			if n == -1 {
-				l = 0
-			} else {
-				l = n + 1
-			}
-		}
-		rep := param.Path[0:l]
-		include := param.Path[l:]
-		directory = rep
-		param.IncludePath = append(param.IncludePath, include)
+		directory = splitDir.Path
+		param.IncludePath = append(param.IncludePath, splitDir.GlobPath)
 	}
 
 	if len(directory) > 0 {

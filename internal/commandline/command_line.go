@@ -31,6 +31,7 @@ func Run() error {
 	ConfigureLsCommandLine(rootCmd)
 	ConfigureMvCommandLine(rootCmd)
 	ConfigureRmCommandLine(rootCmd)
+	ConfigureRenameCommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		return EmptyError

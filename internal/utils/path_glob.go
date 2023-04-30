@@ -2,7 +2,6 @@ package utils
 
 import (
 	"github.com/bmatcuk/doublestar/v4"
-	"path/filepath"
 	"regexp"
 )
 
@@ -14,7 +13,7 @@ var regexMultipleChar = regexp.MustCompile("\\*")
 var regexMultipleDirectory = regexp.MustCompile("\\*\\*/")
 
 func MatchGlob(file string, glob string) (bool, error) {
-	if false {
+	if true {
 		var regexGlob *regexp.Regexp
 		if regexMap[glob] == nil {
 			globConverted := convert(glob)
@@ -29,9 +28,11 @@ func MatchGlob(file string, glob string) (bool, error) {
 		}
 		return regexGlob.MatchString(file), nil
 	} else {
-		glob2 := filepath.ToSlash(glob)
-		file2 := filepath.ToSlash(file)
-		return doublestar.PathMatch(glob2, file2)
+		//glob2 := filepath.ToSlash(glob)
+		//file2 := filepath.ToSlash(file)
+		//return doublestar.PathMatch(glob2, file2)
+		//return doublestar.Match(glob2, file2)
+		return doublestar.PathMatch(glob, file)
 	}
 }
 

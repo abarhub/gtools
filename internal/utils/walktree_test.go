@@ -110,7 +110,8 @@ func Test_matchGlob(t *testing.T) {
 				return
 			}
 			if got != tt.want {
-				t.Errorf("matchGlob() got = %v, want %v", got, tt.want)
+				t.Errorf("matchGlob() got = %v, want %v (glob=%v,file=%v)",
+					got, tt.want, tt.args.pattern, tt.args.file)
 			}
 		})
 	}

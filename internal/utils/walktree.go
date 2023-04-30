@@ -16,6 +16,7 @@ type Walktree struct {
 	exclude        []string
 	include        []string
 	directory2     string
+	recursive      bool
 }
 
 func (receiver *Walktree) SetFilter(filter FilterFile) {
@@ -34,8 +35,12 @@ func (receiver *Walktree) SetDir2(dir2 string) {
 	receiver.directory2 = dir2
 }
 
+func (receiver *Walktree) SetRecursive(recursive bool) {
+	receiver.recursive = recursive
+}
+
 func CreateWalktree(directory string, exclude, include []string) (*Walktree, error) {
-	result := Walktree{rootDirectory: directory, exclude: exclude, include: include}
+	result := Walktree{rootDirectory: directory, exclude: exclude, include: include, recursive: true}
 	return &result, nil
 }
 
@@ -67,15 +72,17 @@ func (receiver *Walktree) parse2(dir string, dir2 string) error {
 				return err
 			} else if toCopy {
 				if f.IsDir() {
-					if receiver.directoryParse != nil {
-						err = receiver.directoryParse(srcFile, destFile)
+					if receiver.recursive {
+						if receiver.directoryParse != nil {
+							err = receiver.directoryParse(srcFile, destFile)
+							if err != nil {
+								return err
+							}
+						}
+						err = receiver.parse2(srcFile, destFile)
 						if err != nil {
 							return err
 						}
-					}
-					err = receiver.parse2(srcFile, destFile)
-					if err != nil {
-						return err
 					}
 				} else {
 					toCopy, err = receiver.fileToCopy(srcFile, false)

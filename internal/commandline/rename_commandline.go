@@ -12,10 +12,12 @@ func cmdRename(param rename.RenameParameters) error {
 
 func ConfigureRenameCommandLine(rootCmd *cobra.Command) {
 	var (
-		directory string
-		verbose   bool
-		dryRun    bool
-		recusive  bool
+		directory   string
+		verbose     bool
+		dryRun      bool
+		recusive    bool
+		excludePath []string
+		includePath []string
 	)
 
 	var renameCmd = &cobra.Command{
@@ -32,8 +34,8 @@ func ConfigureRenameCommandLine(rootCmd *cobra.Command) {
 			} else {
 				return fmt.Errorf("rename need 2 arguments")
 			}
-			param := rename.RenameParameters{files, filesRenamed, recusive,
-				verbose, dryRun, directory}
+			param := rename.RenameParameters{Files: files, FilesRenamed: filesRenamed, Recursive: recusive,
+				Verbose: verbose, DryRun: dryRun, Directory: directory, ExcludePath: excludePath, IncludePath: includePath}
 			commandError = cmdRename(param)
 			return nil
 		},
@@ -48,6 +50,8 @@ func ConfigureRenameCommandLine(rootCmd *cobra.Command) {
 		"Don't rename")
 	renameCmd.Flags().BoolVarP(&recusive, "recusive", "r", false,
 		"sub directory")
+	renameCmd.Flags().StringSliceVarP(&excludePath, "exclude", "e", []string{}, "Path to exclude")
+	renameCmd.Flags().StringSliceVarP(&includePath, "include", "i", []string{}, "Path to include")
 	rootCmd.AddCommand(renameCmd)
 
 }

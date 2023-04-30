@@ -56,6 +56,21 @@ var result2 = map[string][]byte{
 	"dir2/test02_4.log": {4, 5, 6},
 }
 
+var result3 = map[string][]byte{
+	"test1.zip":         {1, 2, 3},
+	"test2.zip":         {1, 2, 3},
+	"test3.csv":         {1, 2, 3},
+	"test4.csv":         {4, 5, 6},
+	"test5.log":         {3, 2, 1},
+	"dir1/test01.txt":   {7, 8, 9},
+	"dir1/test02.txt":   {7, 8, 9},
+	"dir1/test03.csv":   {7, 8, 9},
+	"dir2/test02_1.txt": {4, 5, 6},
+	"dir2/test02_2.csv": {4, 5, 6},
+	"dir2/test02_3.txt": {4, 5, 6},
+	"dir2/test02_4.log": {4, 5, 6},
+}
+
 var empty = []string{}
 
 var out = []string{
@@ -85,6 +100,10 @@ func Test_renameCommandWriter(t *testing.T) {
 			Verbose: false, DryRun: false, Directory: ""}}, defaultFiles, result2, empty, false},
 		{"test3", args{param: RenameParameters{Files: ".txt", FilesRenamed: ".zip", Recursive: true,
 			Verbose: true, DryRun: false, Directory: ""}}, defaultFiles, result, out, false},
+		{"test4_no_recursive", args{param: RenameParameters{Files: ".txt", FilesRenamed: ".zip", Recursive: false,
+			Verbose: false, DryRun: false, Directory: "src"}}, defaultFiles, result3, empty, false},
+		{"test5_", args{param: RenameParameters{Files: ".txt", FilesRenamed: ".zip", Recursive: true,
+			Verbose: false, DryRun: false, Directory: "src"}}, defaultFiles, result, empty, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

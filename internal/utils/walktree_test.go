@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"runtime"
 	"testing"
 )
 
@@ -118,5 +117,6 @@ func Test_matchGlob(t *testing.T) {
 }
 
 func isWindows() bool {
-	return runtime.GOOS == "windows"
+	//return runtime.GOOS == "windows"
+	return true
 }

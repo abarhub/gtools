@@ -82,56 +82,9 @@ func rename(dir string, param RenameParameters, out io.Writer) error {
 			}
 		}
 		return nil
-		//if !param.DryRun {
-		//	err = createDirIfNeeded(destFile)
-		//	if err != nil {
-		//		return err
-		//	}
-		//}
-		//errors := copyFile(srcFile, destFile, param)
-		//err = convertErrorArryToError(errors)
-		//if err != nil {
-		//	return err
-		//}
-		//return nil
 	})
-
-	//walk.SetDir2(dest)
 
 	err = walk.Parse()
 
 	return err
-
-	//files, err := os.ReadDir(dir)
-	//if err != nil {
-	//	return err
-	//}
-	//for _, file := range files {
-	//	filename := filepath.Join(dir, file.Name())
-	//	if file.IsDir() {
-	//		err = rename(filename, param, out)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	} else {
-	//		name := file.Name()
-	//		if strings.Contains(name, param.Files) {
-	//			s := strings.ReplaceAll(name, param.Files, param.FilesRenamed)
-	//			filename2 := filepath.Join(dir, s)
-	//			if param.Verbose {
-	//				_, err := fmt.Fprintf(out, "rename %v -> %v\n", filename, filename2)
-	//				if err != nil {
-	//					return err
-	//				}
-	//			}
-	//			if !param.DryRun {
-	//				err = os.Rename(filename, filename2)
-	//				if err != nil {
-	//					return fmt.Errorf("error for rename of %v to %v : %v", filename, filename2, err)
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//return nil
 }

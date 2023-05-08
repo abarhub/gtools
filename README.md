@@ -21,6 +21,14 @@ set GOARCH=amd64
 go build ./cmd/gtools.go
 ```
 
+to build for raspberry
+```shell
+set GOOS=linux
+set GOARCH=arm
+set GOARM=5
+go build ./cmd/gtools.go
+```
+
 to run tests
 ```shell
 go test ./...

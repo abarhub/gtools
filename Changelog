@@ -1,0 +1,11 @@
+
+
+* 1.1.0 (08/05/2023) :
+-add ls,mv,rename commands
+-build for raspberry
+-add many TU for all commands
+
+
+* 1.0.0 (05/03/2023) :
+-add commands copy,base64,du
+-build for windows and linux

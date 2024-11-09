@@ -16,3 +16,9 @@
 /testdir/test_out/
 .idea
 
+
+gtools
+gtools.exe
+
+dist/
+

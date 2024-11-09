@@ -3,8 +3,8 @@ module gtools
 go 1.23.3
 
 require (
-	github.com/bmatcuk/doublestar/v4 v4.6.1
-	github.com/spf13/cobra v1.6.1
+	github.com/bmatcuk/doublestar/v4 v4.7.1
+	github.com/spf13/cobra v1.8.1
 )
 
 require (

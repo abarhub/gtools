@@ -36,6 +36,10 @@ go test ./...
 
 man
 ```
+gtools is a super simple CLI tools
+   
+simple in CLI
+
 Usage:
   gtools [flags]
   gtools [command]
@@ -46,9 +50,15 @@ Available Commands:
   copy        copy files
   du          disk usage
   help        Help about any command
+  ls          list files
+  mv          move files
+  rename      rename files
+  rm          remove files
+  time        time execution of command
 
 Flags:
-  -h, --help   help for gtools
+  -h, --help      help for gtools
+  -v, --version   version for gtools
 
 Use "gtools [command] --help" for more information about a command.
 ```

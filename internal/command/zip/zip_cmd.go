@@ -21,12 +21,12 @@ type ZipParameters struct {
 
 func ZipCommand(param ZipParameters) error {
 
-	err := createZip(param)
+	err := createZip(param, os.Stdout)
 
 	return err
 }
 
-func createZip(param ZipParameters) error {
+func createZip(param ZipParameters, out io.Writer) error {
 	archive, err := os.Create(param.ZipFile)
 	if err != nil {
 		return fmt.Errorf("error for create file %s : %w", param.ZipFile, err)
@@ -37,7 +37,7 @@ func createZip(param ZipParameters) error {
 	defer zipWriter.Close()
 
 	for _, dir := range param.Directory {
-		err = listFiles(zipWriter, dir, param, "", os.Stdout)
+		err = listFiles(zipWriter, dir, param, "", out)
 		if err != nil {
 			return err
 		}

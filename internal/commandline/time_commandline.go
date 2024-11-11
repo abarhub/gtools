@@ -6,8 +6,9 @@ import (
 )
 
 var timeCmd = &cobra.Command{
-	Use:   "time [flags] cmd [[[param1] param2] ...]",
+	Use:   "time",
 	Short: "time execution of command",
+	Long:  "time [flags] -- cmd [[[param1] param2] ...]",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		param := time.TimeParameters{args[0], args[1:]}

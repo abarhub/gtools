@@ -19,12 +19,12 @@ type UnzipParameters struct {
 
 func UnzipCommand(param UnzipParameters) error {
 
-	err := unzip(param)
+	err := unzip(param, os.Stdout)
 
 	return err
 }
 
-func unzip(param UnzipParameters) error {
+func unzip(param UnzipParameters, out io.Writer) error {
 	archive, err := zip.OpenReader(param.ZipFile)
 	if err != nil {
 		return fmt.Errorf("erreur pour lire le fichier %s : %w", param.ZipFile, err)
@@ -41,10 +41,16 @@ func unzip(param UnzipParameters) error {
 			if f.FileInfo().IsDir() {
 
 				if param.Verbose {
-					fmt.Println("unzipping file ", filePath)
+					_, err = fmt.Fprintln(out, "unzipping file ", f.Name)
+					if err != nil {
+						return err
+					}
 				}
 				if param.Verbose {
-					fmt.Println("creating directory...")
+					_, err = fmt.Fprintln(out, "creating directory...")
+					if err != nil {
+						return err
+					}
 				}
 				err = os.MkdirAll(filePath, os.ModePerm)
 				if err != nil {
@@ -58,7 +64,10 @@ func unzip(param UnzipParameters) error {
 				}
 				if toScan {
 					if param.Verbose {
-						fmt.Println("unzipping file ", filePath)
+						_, err = fmt.Fprintln(out, "unzipping file ", f.Name)
+						if err != nil {
+							return err
+						}
 					}
 					if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
 						return fmt.Errorf("impossible de creer le répertoire %s : %w", filepath.Dir(filePath), err)

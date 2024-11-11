@@ -35,6 +35,7 @@ func Run() error {
 	ConfigureTimeCommandLine(rootCmd)
 	ConfigureZipCommandLine(rootCmd)
 	ConfigureUnzipCommandLine(rootCmd)
+	ConfigureSplitCommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		return EmptyError

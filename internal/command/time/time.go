@@ -2,7 +2,7 @@ package time
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"os/exec"
 	"time"
@@ -15,6 +15,10 @@ type TimeParameters struct {
 
 func TimeCommand(param TimeParameters) error {
 
+	return timeCommande(param, os.Stdout)
+}
+
+func timeCommande(param TimeParameters, out io.Writer) error {
 	start := time.Now()
 
 	cmd := exec.Command(param.Cmd, param.Parameters...)
@@ -27,7 +31,10 @@ func TimeCommand(param TimeParameters) error {
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("Exec took %s", elapsed)
+	_, err := fmt.Fprintf(out, "Exec took %s", elapsed)
+	if err != nil {
+		return fmt.Errorf("could not run print: %v", err)
+	}
 
 	return nil
 }

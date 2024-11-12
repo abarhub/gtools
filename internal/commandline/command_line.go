@@ -37,6 +37,7 @@ func Run() error {
 	ConfigureUnzipCommandLine(rootCmd)
 	ConfigureSplitCommandLine(rootCmd)
 	ConfigureMergeCommandLine(rootCmd)
+	ConfigurePasswordCommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		return EmptyError

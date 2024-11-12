@@ -79,7 +79,10 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 					} else if toScan {
 						filename := filepath.Join(rep, file.Name())
 						if param.Verbose {
-							fmt.Fprintf(out, "create %s\n", filename)
+							_, err = fmt.Fprintf(out, "create %s\n", filename)
+							if err != nil {
+								return err
+							}
 						}
 						err = zipFile(archive, filepath.Join(path, file.Name()), filename)
 						if err != nil {

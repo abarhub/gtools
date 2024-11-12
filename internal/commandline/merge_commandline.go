@@ -22,6 +22,6 @@ var mergeCmd = &cobra.Command{
 }
 
 func ConfigureMergeCommandLine(rootCmd *cobra.Command) {
-	splitCmd.Flags().StringVarP(&outputMerge, "output", "o", "", "output file")
+	mergeCmd.Flags().StringVarP(&outputMerge, "output", "o", "", "output file")
 	rootCmd.AddCommand(mergeCmd)
 }

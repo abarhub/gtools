@@ -51,10 +51,15 @@ Available Commands:
   du          disk usage
   help        Help about any command
   ls          list files
+  merge       merge files
   mv          move files
+  password    generate password
   rename      rename files
   rm          remove files
+  split       split file
   time        time execution of command
+  unzip       unzip directory
+  zip         zip directory
 
 Flags:
   -h, --help      help for gtools

@@ -38,6 +38,7 @@ func Run() error {
 	ConfigureSplitCommandLine(rootCmd)
 	ConfigureMergeCommandLine(rootCmd)
 	ConfigurePasswordCommandLine(rootCmd)
+	ConfigureAESCommandLine(rootCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		return EmptyError

@@ -2,6 +2,7 @@ package base64
 
 import (
 	"bufio"
+	"bytes"
 	b64 "encoding/base64"
 	"fmt"
 	"gtools/internal/utils"
@@ -166,4 +167,34 @@ func decode(in *bufio.Reader, out *bufio.Writer, nb int) error {
 	}
 
 	return nil
+}
+
+func EncodeStr(buffer []byte) ([]byte, error) {
+	reader := bufio.NewReader(bytes.NewReader(buffer))
+	buf := new(bytes.Buffer)
+	writer := bufio.NewWriter(buf)
+	err := encode(reader, writer, 100)
+	if err != nil {
+		return nil, err
+	}
+	err2 := writer.Flush()
+	if err2 != nil {
+		return nil, err2
+	}
+	return buf.Bytes(), nil
+}
+
+func DecodeStr(s []byte) ([]byte, error) {
+	reader := bufio.NewReader(bytes.NewReader(s))
+	buf := new(bytes.Buffer)
+	writer := bufio.NewWriter(buf)
+	err := decode(reader, writer, 100)
+	if err != nil {
+		return nil, err
+	}
+	err2 := writer.Flush()
+	if err2 != nil {
+		return nil, err2
+	}
+	return buf.Bytes(), nil
 }

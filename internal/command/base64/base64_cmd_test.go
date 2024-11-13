@@ -6,6 +6,7 @@ import (
 	"gtools/internal/utils"
 	"os"
 	"path"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -238,6 +239,62 @@ func TestEncodeDecodeBase64EncodeDecode(t *testing.T) {
 						}
 					}
 				}
+			}
+		})
+	}
+}
+
+func TestEncodeStr(t *testing.T) {
+	type args struct {
+		input, output []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"test1",
+			args{[]byte{'a', 'b', 'c', 'd', 'e', 'f'}, []byte{'Y', 'W', 'J', 'j', 'Z', 'G', 'V', 'm'}},
+			false},
+		{"test2", args{[]byte("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), []byte("YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh")}, false},
+		{"test3", args{[]byte("1234567890"), []byte("MTIzNDU2Nzg5MA==")}, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := EncodeStr(test.args.input)
+			if (err != nil) != test.wantErr {
+				t.Errorf("encodeStr() error = %v, wantErr %v", err, test.wantErr)
+			} else if !reflect.DeepEqual(result, test.args.output) {
+				t.Errorf("encodeStr() output = %v, want %v", result, test.args.output)
+			}
+		})
+	}
+}
+
+func TestDecodeStr(t *testing.T) {
+	type args struct {
+		input, output []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"test1",
+			args{[]byte{'Y', 'W', 'J', 'j', 'Z', 'G', 'V', 'm'}, []byte{'a', 'b', 'c', 'd', 'e', 'f'}},
+			false},
+		{"test2", args{[]byte("YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFh"), []byte("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")}, false},
+		{"test3", args{[]byte("MTIzNDU2Nzg5MA=="), []byte("1234567890")}, false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := DecodeStr(test.args.input)
+			if (err != nil) != test.wantErr {
+				t.Errorf("encodeStr() error = %v, wantErr %v", err, test.wantErr)
+			} else if !reflect.DeepEqual(result, test.args.output) {
+				t.Errorf("encodeStr() output = %v, want %v", result, test.args.output)
 			}
 		})
 	}

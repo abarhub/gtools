@@ -28,7 +28,7 @@ var aesCmd = &cobra.Command{
 func ConfigureAESCommandLine(rootCmd *cobra.Command) {
 	aesCmd.Flags().StringVarP(&inputFileAes, "input", "i", "", "File input")
 	aesCmd.Flags().StringVarP(&outpoutFileAes, "output", "o", "", "File output")
-	aesCmd.Flags().BoolVarP(&decryptAes, "decrypt", "d", false, "encrypt or decrypt. encrypt by default")
+	aesCmd.Flags().BoolVarP(&decryptAes, "decrypt", "d", false, "decrypt. encrypt by default")
 	aesCmd.Flags().StringVarP(&passwordAes, "password", "p", "", "Password for decrypt")
 	rootCmd.AddCommand(aesCmd)
 }

@@ -29,6 +29,6 @@ func ConfigureAESCommandLine(rootCmd *cobra.Command) {
 	aesCmd.Flags().StringVarP(&inputFileAes, "input", "i", "", "File input")
 	aesCmd.Flags().StringVarP(&outpoutFileAes, "output", "o", "", "File output")
 	aesCmd.Flags().BoolVarP(&decryptAes, "decrypt", "d", false, "decrypt. encrypt by default")
-	aesCmd.Flags().StringVarP(&passwordAes, "password", "p", "", "Password for decrypt")
+	aesCmd.Flags().StringVarP(&passwordAes, "password", "p", "", "Password in base64. if not present for crypt, the password was generated in base 64 and display in stdout")
 	rootCmd.AddCommand(aesCmd)
 }

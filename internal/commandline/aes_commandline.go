@@ -2,7 +2,7 @@ package commandline
 
 import (
 	"github.com/spf13/cobra"
-	"gtools/internal/command/aes"
+	"gtools/internal/command/aescrypt"
 )
 
 var (
@@ -17,9 +17,9 @@ var aesCmd = &cobra.Command{
 	Short: "aes encrypt/decrypt",
 	Args:  cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		param := aes.AesParameters{InputFile: inputFileAes, OutpoutFile: outpoutFileAes, Encrypt: !decryptAes,
+		param := aescrypt.AesParameters{InputFile: inputFileAes, OutpoutFile: outpoutFileAes, Encrypt: !decryptAes,
 			Password: passwordAes}
-		commandError = aes.AesCommand(param)
+		commandError = aescrypt.AesCommand(param)
 		return nil
 	},
 	DisableFlagsInUseLine: true,

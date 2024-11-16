@@ -45,6 +45,7 @@ Usage:
   gtools [command]
 
 Available Commands:
+  aes         aes encrypt/decrypt
   base64      encode/decode in base64
   completion  Generate the autocompletion script for the specified shell
   copy        copy files

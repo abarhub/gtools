@@ -54,19 +54,9 @@ Write-Output "Le repertoire du script est : $PSScriptRoot"
 
 $repertoireDest = "$PSScriptRoot/dist"
 
-# Exemple d'appel de la fonction avec plusieurs commandes
-#try
-#{
-#    ExecuterEtZip -NomFichierZip $repertoireDest -NomFichierATester "$PSScriptRoot/gtools.exe" -Commandes @( @{ Nom = "set GOARCH=amd64"; Params = @() }, @{ Nom = "set GOOS=windows"; Params = @() }, @{ Nom = "go"; Params = @("build", "./cmd/gtools.go") } )
-#}
-#catch
-#{
-    #Write-Output "Une erreur s'est produite : $( $_.Exception.Message )"
-#}
-
 Set-Location -Path $PSScriptRoot
 
-$version="v1.2.0"
+$version="v1.3.0"
 
 $GOARCH="amd64"
 $GOOS="windows"

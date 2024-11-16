@@ -1,4 +1,7 @@
 
+* 1.3.0 (16/11/2024)
+-add aes, split, merge, password zip, unzip
+
 * 1.2.0 (09/11/2024)
 -add time commands
 

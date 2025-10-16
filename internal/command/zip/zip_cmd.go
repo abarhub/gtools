@@ -53,7 +53,6 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 	}
 
 	for _, file := range files {
-		filename := filepath.Join(path, file.Name())
 
 		skip := false
 		if strings.HasPrefix(file.Name(), ".") {
@@ -61,6 +60,7 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 		}
 
 		if !skip {
+			filename := filepath.Join(path, file.Name())
 			toScan, err := fileToScan(filename, param, true)
 			if err != nil {
 				return err

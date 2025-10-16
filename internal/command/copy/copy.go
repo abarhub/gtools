@@ -42,7 +42,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	if err != nil {
 		return err
 	} else if isSubFolder {
-		return fmt.Errorf("Cannot copy a folder into the folder itself!")
+		return fmt.Errorf("cannot copy a folder into the folder itself")
 	}
 
 	file, err := os.Stat(src)

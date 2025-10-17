@@ -42,7 +42,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	if err != nil {
 		return err
 	} else if isSubFolder {
-		return fmt.Errorf("cannot copy a folder into the folder itself")
+		return fmt.Errorf("Cannot copy a folder into the folder itself.")
 	}
 
 	file, err := os.Stat(src)
@@ -53,7 +53,7 @@ func copyDirectory(src string, dest string, param CopyParameters) error {
 	dest2 := filepath.Clean(dest)
 
 	if dest2 == "." {
-		return fmt.Errorf("Destination " + dest + " is invalid !")
+		return fmt.Errorf("Destination %s is invalid.", dest)
 	}
 
 	if !file.IsDir() {
@@ -76,7 +76,7 @@ func copyDir2(src string, dest string, param CopyParameters) error {
 	dest2 := filepath.Clean(dest)
 
 	if dest2 == "." {
-		return fmt.Errorf("Destination %v is invalid !", dest)
+		return fmt.Errorf("Destination %v is invalid.", dest)
 	}
 
 	if param.CreateDestDir && !param.DryRun {
@@ -123,7 +123,7 @@ func convertErrorArryToError(errors []error) error {
 		for _, e = range errors {
 			s = s + e.Error()
 		}
-		return fmt.Errorf(s)
+		return fmt.Errorf("%s", s)
 	} else {
 		return nil
 	}
@@ -246,6 +246,6 @@ func copyFileToDest(file string, param CopyParameters, srcFile string) (bool, er
 			return fDest.Size() != fSrc.Size(), nil
 		}
 	default:
-		return false, fmt.Errorf("Invalide param copy if exists : %v !", param.CopyIfFileExists)
+		return false, fmt.Errorf("Invalide param copy if exists : %v.", param.CopyIfFileExists)
 	}
 }

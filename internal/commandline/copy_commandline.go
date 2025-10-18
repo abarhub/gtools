@@ -2,8 +2,9 @@ package commandline
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	copy2 "gtools/internal/command/copy"
+
+	"github.com/spf13/cobra"
 )
 
 var (

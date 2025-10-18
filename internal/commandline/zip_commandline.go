@@ -1,8 +1,9 @@
 package commandline
 
 import (
-	"github.com/spf13/cobra"
 	"gtools/internal/command/zip"
+
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -13,9 +14,11 @@ var (
 )
 
 var zipCmd = &cobra.Command{
-	Use:   "zip",
-	Short: "zip directory",
-	Args:  cobra.MinimumNArgs(2),
+	Use:   "zip [flags] zipfile file1 [file2 ...]",
+	Short: "zip files",
+	Long: `zip files
+Example: zip -r archive.zip project/`,
+	Args: cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		param := zip.ZipParameters{ZipFile: args[0], Directory: args[1:],
 			Recurvive: recursiveZip, ExcludePath: excludePathZip,

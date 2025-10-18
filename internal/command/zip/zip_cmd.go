@@ -17,6 +17,7 @@ type ZipParameters struct {
 	ExcludePath []string
 	IncludePath []string
 	Verbose     bool
+	Dates       utils.Dates
 }
 
 func ZipCommand(param ZipParameters) error {
@@ -78,15 +79,19 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 						return err
 					} else if toScan {
 						filename := filepath.Join(rep, file.Name())
-						if param.Verbose {
-							_, err = fmt.Fprintf(out, "create %s\n", filename)
+						if isOk, err2 := fileToAdd(filename, param); isOk {
+							if param.Verbose {
+								_, err = fmt.Fprintf(out, "create %s\n", filename)
+								if err != nil {
+									return err
+								}
+							}
+							err = zipFile(archive, filepath.Join(path, file.Name()), filename)
 							if err != nil {
 								return err
 							}
-						}
-						err = zipFile(archive, filepath.Join(path, file.Name()), filename)
-						if err != nil {
-							return err
+						} else if err2 != nil {
+							return err2
 						}
 					}
 				}
@@ -94,6 +99,22 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 		}
 	}
 	return nil
+}
+
+func fileToAdd(filename string, param ZipParameters) (bool, error) {
+	if len(param.Dates.Dates) > 0 {
+		fileinfo, err := os.Stat(filename)
+		if err != nil {
+			return false, fmt.Errorf("error for get modification time of '%s' : %v", filename, err)
+		}
+		if param.Dates.IsDateOk(fileinfo.ModTime()) {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	} else {
+		return true, nil
+	}
 }
 
 func zipFile(archive *zip.Writer, file string, pathDest string) error {

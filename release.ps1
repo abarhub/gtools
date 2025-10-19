@@ -56,7 +56,7 @@ $repertoireDest = "$PSScriptRoot/dist"
 
 Set-Location -Path $PSScriptRoot
 
-$version="v1.3.0"
+$version="v1.4.0"
 
 $GOARCH="amd64"
 $GOOS="windows"

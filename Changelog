@@ -1,4 +1,7 @@
 
+* 1.4.0 (19/10/2025)
+-add dates parameters for zip and ls
+
 * 1.3.0 (16/11/2024)
 -add aes, split, merge, password, zip, unzip
 

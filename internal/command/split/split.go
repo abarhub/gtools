@@ -96,7 +96,7 @@ func splitFile(param SplitParameters) (errResult error) {
 		return err
 	}
 	defer func() {
-		errResult = utils.FinWithErrors(src, errResult, fichier)
+		errResult = utils.CloseWithErrors(src, errResult, fichier)
 	}()
 
 	buf := make([]byte, BUFFERSIZE)

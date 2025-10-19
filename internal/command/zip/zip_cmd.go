@@ -82,15 +82,15 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 					if err != nil {
 						return err
 					} else if toScan {
-						filename := filepath.Join(rep, file.Name())
+						filename2 := filepath.Join(rep, file.Name())
 						if isOk, err2 := utils.FileToDo(filename, param.Dates); isOk {
 							if param.Verbose {
-								_, err = fmt.Fprintf(out, "create %s\n", filename)
+								_, err = fmt.Fprintf(out, "create %s\n", filename2)
 								if err != nil {
 									return err
 								}
 							}
-							err = zipFile(archive, filepath.Join(path, file.Name()), filename)
+							err = zipFile(archive, filepath.Join(path, file.Name()), filename2)
 							if err != nil {
 								return err
 							}

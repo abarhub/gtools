@@ -12,17 +12,21 @@ var (
 	recursiveZip   bool
 	excludePathZip []string
 	includePathZip []string
-	dates          []string
+	datesZip       []string
 )
 
 var zipCmd = &cobra.Command{
 	Use:   "zip [flags] zipfile file1 [file2 ...]",
 	Short: "zip files",
 	Long: `zip files
-Example: zip -r archive.zip project/`,
+Examples: 
+zip -r archive.zip project/
+zip -r -i=*.txt archive.zip project/
+zip -r -d=<=2025-07-01T10:30:00,>=2025-06-01T15:00:00 archive.zip project/
+`,
 	Args: cobra.MinimumNArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		date2, err := utils.ParseDates(dates)
+		date2, err := utils.ParseDates(datesZip)
 		if err != nil {
 			return err
 		}
@@ -44,7 +48,8 @@ func ConfigureZipCommandLine(rootCmd *cobra.Command) {
 	zipCmd.Flags().StringSliceVarP(&includePathZip, "include", "i", []string{}, "Path to include")
 	zipCmd.Flags().BoolVarP(&verboseZip, "verbose", "v", false,
 		"Verbose")
-	zipCmd.Flags().StringSliceVarP(&dates, "dates", "d", []string{},
-		"Date of files to add in zip in format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS with optional prefix >, <, >=, <=, =")
+	zipCmd.Flags().StringSliceVarP(&datesZip, "dates", "d", []string{},
+		"Date of files to add in zip in format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS "+
+			"with optional prefix >, <, >=, <=, =. If no prefix, prefix is =")
 	rootCmd.AddCommand(zipCmd)
 }

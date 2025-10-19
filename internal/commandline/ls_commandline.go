@@ -56,7 +56,7 @@ func ConfigureLsCommandLine(rootCmd *cobra.Command) {
 		"Display directory")
 	lsCmd.Flags().BoolVarP(&displayAllLs, "displayAll", "a", false,
 		"Display dot files")
-	zipCmd.Flags().StringSliceVarP(&datesLs, "dates", "t", []string{},
+	lsCmd.Flags().StringSliceVarP(&datesLs, "dates", "t", []string{},
 		"Date of files to show in format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS with optional prefix >, <, >=, <=, =")
 	rootCmd.AddCommand(lsCmd)
 

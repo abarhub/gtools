@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -117,4 +118,20 @@ func (dates Dates) IsDateOk(time2 time.Time) bool {
 	}
 
 	return true
+}
+
+func FileToDo(filename string, dates Dates) (bool, error) {
+	if len(dates.Dates) > 0 {
+		fileInfo, err := os.Stat(filename)
+		if err != nil {
+			return false, fmt.Errorf("error for get modification time of '%s' : %v", filename, err)
+		}
+		if dates.IsDateOk(fileInfo.ModTime()) {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	} else {
+		return true, nil
+	}
 }

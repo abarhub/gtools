@@ -1,8 +1,10 @@
 package commandline
 
 import (
-	"github.com/spf13/cobra"
 	"gtools/internal/command/ls"
+	"gtools/internal/utils"
+
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -12,6 +14,7 @@ var (
 	includePathLs      []string
 	displayDirectoryLs bool
 	displayAllLs       bool
+	datesLs            []string
 )
 
 var lsCmd = &cobra.Command{
@@ -24,8 +27,13 @@ var lsCmd = &cobra.Command{
 		if len(args) > 0 {
 			path = args[0]
 		}
-		param := ls.LsParameters{path, longFormat, recursive,
-			excludePathLs, includePathLs, displayDirectoryLs, displayAllLs}
+		date2, err := utils.ParseDates(datesLs)
+		if err != nil {
+			return err
+		}
+		param := ls.LsParameters{Path: path, LongFormat: longFormat, Recurvive: recursive,
+			ExcludePath: excludePathLs, IncludePath: includePathLs, DisplayDirectory: displayDirectoryLs,
+			DisplayAll: displayAllLs, Dates: date2}
 		commandError = cmdLs(param)
 		return nil
 	},
@@ -48,6 +56,8 @@ func ConfigureLsCommandLine(rootCmd *cobra.Command) {
 		"Display directory")
 	lsCmd.Flags().BoolVarP(&displayAllLs, "displayAll", "a", false,
 		"Display dot files")
+	zipCmd.Flags().StringSliceVarP(&datesLs, "dates", "t", []string{},
+		"Date of files to show in format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS with optional prefix >, <, >=, <=, =")
 	rootCmd.AddCommand(lsCmd)
 
 }

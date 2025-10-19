@@ -3,6 +3,7 @@ package ls
 import (
 	"bytes"
 	"gtools/internal/testutils"
+	"gtools/internal/utils"
 	"reflect"
 	"strings"
 	"testing"
@@ -51,37 +52,37 @@ func Test_lsCommandWriter(t *testing.T) {
 		wantErr bool
 	}{
 		{"test1", args{LsParameters{"", false, false,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result, false},
 		{"test2", args{LsParameters{"dir1", false, false,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result2, false},
 		{"test3", args{LsParameters{"", false, true,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result3, false},
 		{"test4_hidde_directory", args{LsParameters{"", false, false,
-			empty, empty, false, true}}, defaultFiles,
+			empty, empty, false, true, utils.Dates{}}}, defaultFiles,
 			result4, false},
 		{"test5_exclude_recursive", args{LsParameters{"", false, true,
-			[]string{"*.txt"}, empty, true, true}}, defaultFiles,
+			[]string{"*.txt"}, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result5, false},
 		{"test6_include_recursive", args{LsParameters{"", false, true,
-			empty, []string{"*.txt"}, true, true}}, defaultFiles,
+			empty, []string{"*.txt"}, true, true, utils.Dates{}}}, defaultFiles,
 			result6, false},
 		{"test7_exclude_no_recursive", args{LsParameters{"", false, false,
-			[]string{"*.txt"}, empty, true, true}}, defaultFiles,
+			[]string{"*.txt"}, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result7, false},
 		{"test8_include_no_recursive", args{LsParameters{"", false, false,
-			empty, []string{"*.txt"}, true, true}}, defaultFiles,
+			empty, []string{"*.txt"}, true, true, utils.Dates{}}}, defaultFiles,
 			result8, false},
 		{"test9_path", args{LsParameters{"*.txt", false, false,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result8, false},
 		{"test10_path", args{LsParameters{"**/*.txt", false, false,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result6, false},
 		{"test11_path", args{LsParameters{"test?.txt", false, false,
-			empty, empty, true, true}}, defaultFiles,
+			empty, empty, true, true, utils.Dates{}}}, defaultFiles,
 			result8, false},
 	}
 	for _, tt := range tests {

@@ -18,7 +18,7 @@ type SplitParameters struct {
 
 type FichierI interface {
 	Write(b []byte) error
-	Fin() error
+	Close() error
 }
 
 type FichierS struct {
@@ -95,14 +95,9 @@ func splitFile(param SplitParameters) (errResult error) {
 	if err != nil {
 		return err
 	}
-	if tempErr := fichier.Fin(); tempErr != nil {
-		tempErr = fmt.Errorf("error for fin %v : %v", src, tempErr.Error())
-		if errResult == nil {
-			errResult = tempErr
-		} else {
-			errResult = fmt.Errorf("%v. %v", errResult, tempErr.Error())
-		}
-	}
+	defer func() {
+		errResult = utils.FinWithErrors(src, errResult, fichier)
+	}()
 
 	buf := make([]byte, BUFFERSIZE)
 	for {
@@ -201,7 +196,7 @@ func (v *FichierS) creationFichier() error {
 	return nil
 }
 
-func (v *FichierS) Fin() error {
+func (v *FichierS) Close() error {
 	if v.fichier != nil {
 		err := v.fichier.Close()
 		if err != nil {

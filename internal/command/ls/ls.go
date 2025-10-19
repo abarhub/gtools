@@ -17,6 +17,7 @@ type LsParameters struct {
 	IncludePath      []string
 	DisplayDirectory bool
 	DisplayAll       bool
+	Dates            utils.Dates
 }
 
 func LsCommand(param LsParameters) error {
@@ -86,9 +87,13 @@ func listFiles(path string, param LsParameters, rep string, out io.Writer) error
 					if err != nil {
 						return err
 					} else if toScan {
-						err = display(param, file, filename, out)
-						if err != nil {
-							return err
+						if isOk, err2 := utils.FileToDo(filename, param.Dates); isOk {
+							err = display(param, file, filename, out)
+							if err != nil {
+								return err
+							}
+						} else {
+							return err2
 						}
 					}
 				}

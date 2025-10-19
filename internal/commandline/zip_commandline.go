@@ -44,7 +44,7 @@ func ConfigureZipCommandLine(rootCmd *cobra.Command) {
 	zipCmd.Flags().StringSliceVarP(&includePathZip, "include", "i", []string{}, "Path to include")
 	zipCmd.Flags().BoolVarP(&verboseZip, "verbose", "v", false,
 		"Verbose")
-	zipCmd.Flags().StringSliceVarP(&includePathZip, "dates", "d", []string{},
+	zipCmd.Flags().StringSliceVarP(&dates, "dates", "d", []string{},
 		"Date of files to add in zip in format YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS with optional prefix >, <, >=, <=, =")
 	rootCmd.AddCommand(zipCmd)
 }

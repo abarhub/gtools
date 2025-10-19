@@ -83,7 +83,7 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 						return err
 					} else if toScan {
 						filename := filepath.Join(rep, file.Name())
-						if isOk, err2 := fileToAdd(filename, param); isOk {
+						if isOk, err2 := utils.FileToDo(filename, param.Dates); isOk {
 							if param.Verbose {
 								_, err = fmt.Fprintf(out, "create %s\n", filename)
 								if err != nil {
@@ -103,22 +103,6 @@ func listFiles(archive *zip.Writer, path string, param ZipParameters, rep string
 		}
 	}
 	return nil
-}
-
-func fileToAdd(filename string, param ZipParameters) (bool, error) {
-	if len(param.Dates.Dates) > 0 {
-		fileinfo, err := os.Stat(filename)
-		if err != nil {
-			return false, fmt.Errorf("error for get modification time of '%s' : %v", filename, err)
-		}
-		if param.Dates.IsDateOk(fileinfo.ModTime()) {
-			return true, nil
-		} else {
-			return false, nil
-		}
-	} else {
-		return true, nil
-	}
 }
 
 func zipFile(archive *zip.Writer, file string, pathDest string) (errResult error) {

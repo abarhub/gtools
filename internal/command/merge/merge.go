@@ -3,6 +3,7 @@ package merge
 import (
 	"errors"
 	"fmt"
+	"gtools/internal/utils"
 	"io"
 	"log"
 	"os"
@@ -90,7 +91,9 @@ func copyFile(directory, name, fileFinal string, i int) (err error) {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		err = utils.CloseWithErrors(fileFinal, err, f)
+	}()
 
 	err = writeFile(directory, name, f)
 	if err != nil {
@@ -100,12 +103,15 @@ func copyFile(directory, name, fileFinal string, i int) (err error) {
 	return nil
 }
 
-func writeFile(directory, name string, f *os.File) error {
-	fi, err := os.Open(filepath.Join(directory, name))
+func writeFile(directory, name string, f *os.File) (err error) {
+	path := filepath.Join(directory, name)
+	fi, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	defer fi.Close()
+	defer func() {
+		err = utils.CloseWithErrors(path, err, fi)
+	}()
 
 	buf := make([]byte, 1024)
 	for {

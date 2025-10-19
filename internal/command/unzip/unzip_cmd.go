@@ -82,18 +82,22 @@ func unzip(param UnzipParameters, out io.Writer) error {
 	return nil
 }
 
-func copieFichier(filePath string, f *zip.File) error {
+func copieFichier(filePath string, f *zip.File) (errResult error) {
 	dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 	if err != nil {
 		return fmt.Errorf("impossible de creer le fichier %s : %w", filePath, err)
 	}
-	defer dstFile.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(filePath, errResult, dstFile)
+	}()
 
 	fileInArchive, err := f.Open()
 	if err != nil {
 		return fmt.Errorf("impossible d'ouvrir' le fichier %s dans le zip : %w", f.Name, err)
 	}
-	defer fileInArchive.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(f.Name, errResult, fileInArchive)
+	}()
 
 	if _, err := io.Copy(dstFile, fileInArchive); err != nil {
 		return fmt.Errorf("impossible de copier le fichier %s : %w", f.Name, err)

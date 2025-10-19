@@ -28,14 +28,7 @@ func diskUsage(currPath string, depth int, maxDepth int, humanReadable bool, thr
 		return size, nil
 	}
 	defer func() {
-		if tempErr := dir.Close(); tempErr != nil {
-			tempErr = fmt.Errorf("error for close %v : %v", currPath, tempErr.Error())
-			if errResult == nil {
-				errResult = tempErr
-			} else {
-				errResult = fmt.Errorf("%v. %v", errResult, tempErr.Error())
-			}
-		}
+		errResult = utils.CloseWithErrors(currPath, errResult, dir)
 	}()
 
 	files, err := dir.Readdir(-1)

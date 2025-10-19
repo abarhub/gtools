@@ -2,6 +2,7 @@ package split
 
 import (
 	"fmt"
+	"gtools/internal/utils"
 	"io"
 	"os"
 	"strconv"
@@ -66,7 +67,7 @@ func calculParametre(param *SplitParameters) error {
 	return nil
 }
 
-func splitFile(param SplitParameters) error {
+func splitFile(param SplitParameters) (errResult error) {
 
 	BUFFERSIZE := param.bufferSize
 
@@ -86,13 +87,22 @@ func splitFile(param SplitParameters) error {
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(src, errResult, source)
+	}()
 
 	fichier, err := creationFichier(src, param.size)
 	if err != nil {
 		return err
 	}
-	defer fichier.Fin()
+	if tempErr := fichier.Fin(); tempErr != nil {
+		tempErr = fmt.Errorf("error for fin %v : %v", src, tempErr.Error())
+		if errResult == nil {
+			errResult = tempErr
+		} else {
+			errResult = fmt.Errorf("%v. %v", errResult, tempErr.Error())
+		}
+	}
 
 	buf := make([]byte, BUFFERSIZE)
 	for {

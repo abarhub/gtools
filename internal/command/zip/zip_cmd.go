@@ -27,15 +27,19 @@ func ZipCommand(param ZipParameters) error {
 	return err
 }
 
-func createZip(param ZipParameters, out io.Writer) error {
+func createZip(param ZipParameters, out io.Writer) (errResult error) {
 	archive, err := os.Create(param.ZipFile)
 	if err != nil {
 		return fmt.Errorf("error for create file %s : %w", param.ZipFile, err)
 	}
-	defer archive.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(param.ZipFile, errResult, archive)
+	}()
 
 	zipWriter := zip.NewWriter(archive)
-	defer zipWriter.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(param.ZipFile, errResult, zipWriter)
+	}()
 
 	for _, dir := range param.Directory {
 		err = listFiles(zipWriter, dir, param, "", out)
@@ -117,12 +121,14 @@ func fileToAdd(filename string, param ZipParameters) (bool, error) {
 	}
 }
 
-func zipFile(archive *zip.Writer, file string, pathDest string) error {
+func zipFile(archive *zip.Writer, file string, pathDest string) (errResult error) {
 	f1, err := os.Open(file)
 	if err != nil {
 		return fmt.Errorf("error for open file %s : %w", file, err)
 	}
-	defer f1.Close()
+	defer func() {
+		errResult = utils.CloseWithErrors(file, errResult, f1)
+	}()
 
 	w1, err := archive.Create(pathDest)
 	if err != nil {

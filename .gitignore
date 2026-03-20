@@ -22,3 +22,7 @@ gtools.exe
 
 dist/
 
+justfile
+coverage.out
+sonar-project.properties
+
